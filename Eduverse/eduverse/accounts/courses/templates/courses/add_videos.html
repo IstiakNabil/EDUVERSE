@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Videos - {{ course.title }} - EduVerse{% endblock %}
+
+{% block content %}
+<h1>Add Videos to: {{ course.title }}</h1>
+
+<h3>Upload New Video</h3>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div>
+        <label for="id_title">Video Title:</label><br>
+        {{ form.title }}
+        {% if form.title.errors %}
+            <div style="color: red;">{{ form.title.errors }}</div>
+        {% endif %}
+    </div><br>
+    
+    <div>
+        <label for="id_video_file">Video File:</label><br>
+        {{ form.video_file }}
+        {% if form.video_file.errors %}
+            <div style="color: red;">{{ form.video_file.errors }}</div>
+        {% endif %}
+    </div><br>
+    
+    <button type="submit">Upload Video</button>
+    <a href="{% url 'courses:course_detail' course.pk %}">Back to Course</a>
+</form>
+
+<hr>
+
+<h3>Existing Videos ({{ videos.count }})</h3>
+{% if videos %}
+    {% for video in videos %}
+        <div style="border: 1px solid #eee; margin: 10px 0; padding: 10px;">
+            <h4>{{ video.title }}</h4>
+            <video width="320" height="240" controls>
+                <source src="{{ video.video_file.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <p>Uploaded on: {{ video.created_at|date:"M d, Y H:i" }}</p>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No videos uploaded yet. Use the form above to add your first video!</p>
+{% endif %}
+
+<p><a href="{% url 'courses:course_detail' course.pk %}">← Back to Course Details</a></p>
+{% endblock %}

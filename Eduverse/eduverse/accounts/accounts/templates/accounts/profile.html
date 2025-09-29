@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>{{ user.username }}'s Profile</h2>
+
+  <p>Username: {{ user.username }}</p>
+  <p>Email: {{ user.email }}</p>
+  <p>Bio: {{ user.profile.bio|default:"No bio yet." }}</p>
+  <p>Location: {{ user.profile.location|default:"No location set." }}</p>
+  <p>Birth Date: {{ user.profile.birth_date|default:"Not provided." }}</p>
+
+  {% if latest_app %}
+    {% if latest_app.status == "approved" %}
+      <p>Your teacher application has been approved.</p>
+    {% elif latest_app.status == "rejected" %}
+      <p>Your teacher application has been rejected.</p>
+      <a href="{% url 'teachers:apply' %}">Re-apply</a>
+    {% else %}
+      <p>Your teacher application is still pending.</p>
+    {% endif %}
+  {% else %}
+    <a href="{% url 'teachers:apply' %}">Apply</a>
+  {% endif %}
+  <a href="{% url 'profile_update' %}">Edit Profile</a>
+  <a href="{% url 'delete_account' %}">Delete Account</a>
+  <a href="{% url 'courses:course_create' %}">Create your first course!</a>
+
+{% endblock %}
