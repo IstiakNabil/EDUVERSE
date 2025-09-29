@@ -8,6 +8,7 @@ from .views import (   # 👈 import your custom view explicitly
     delete_account_view, # <= important!
 )
 
+
 urlpatterns = [
     path("signup/", signup_view, name="signup"),
     path("login/", UserLoginView.as_view(), name="login"),

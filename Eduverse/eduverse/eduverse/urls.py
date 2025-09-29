@@ -27,6 +27,7 @@ urlpatterns = [
     path('', home_view, name='home'), # Add this for the homepage
     path('accounts/', include('accounts.urls')),
     path("teachers/", include("teachers.urls")),
+    path('courses/', include('courses.urls')),
     #password Reset
 
     path('password-reset/', auth_views.PasswordResetView.as_view(template_name='accounts/password_reset.html'),
