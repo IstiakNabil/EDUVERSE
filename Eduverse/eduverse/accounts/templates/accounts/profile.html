@@ -9,13 +9,18 @@
   <p>Location: {{ user.profile.location|default:"No location set." }}</p>
   <p>Birth Date: {{ user.profile.birth_date|default:"Not provided." }}</p>
 
-  <a href="{% url 'profile_update' %}">Update Profile</a>
-
-  {% if latest_app and latest_app.status == "approved" %}
-    <p>Your teacher application has been approved.</p>
+  {% if latest_app %}
+    {% if latest_app.status == "approved" %}
+      <p>Your teacher application has been approved.</p>
+    {% elif latest_app.status == "rejected" %}
+      <p>Your teacher application has been rejected.</p>
+      <a href="{% url 'teachers:apply' %}">Re-apply</a>
+    {% else %}
+      <p>Your teacher application is still pending.</p>
+    {% endif %}
   {% else %}
     <a href="{% url 'teachers:apply' %}">Apply</a>
   {% endif %}
 
-<a href="{% url 'delete_account' %}">Delete Account</a>
+  <a href="{% url 'delete_account' %}">Delete Account</a>
 {% endblock %}

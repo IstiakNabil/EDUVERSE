@@ -2,7 +2,7 @@ from django.contrib import admin, messages
 from django.urls import path, reverse
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.html import format_html
-
+from django.core.mail import send_mail
 from .models import TeacherApplication
 
 
@@ -67,6 +67,18 @@ class TeacherApplicationAdmin(admin.ModelAdmin):
             app.status = TeacherApplication.Status.APPROVED
             app.save(update_fields=["status"])
             messages.success(request, f"Approved {app.full_name}.")
+
+            send_mail(
+                subject="Your Teacher Application has been Approved",
+                message=f"Dear {app.full_name},\n\n"
+                        "Congratulations! Your teacher application has been approved. "
+                        "You can now log in and start contributing as a teacher.\n\n"
+                        "Best regards,\nEduverse Team",
+                from_email="noreply@eduverse.com",  # replace with DEFAULT_FROM_EMAIL
+                recipient_list=[app.user.email],
+                fail_silently=True,
+            )
+
         else:
             messages.info(request, f"{app.full_name} is already approved.")
         return redirect("admin:teachers_teacherapplication_changelist")
@@ -77,6 +89,17 @@ class TeacherApplicationAdmin(admin.ModelAdmin):
             app.status = TeacherApplication.Status.REJECTED
             app.save(update_fields=["status"])
             messages.success(request, f"Rejected {app.full_name}.")
+            send_mail(
+                subject="Your Teacher Application has been Rejected",
+                message=f"Dear {app.full_name},\n\n"
+                        "We regret to inform you that your teacher application has been rejected. "
+                        "Thank you for your interest in joining us. "
+                        "You may reapply in the future.\n\n"
+                        "Best regards,\nEduverse Team",
+                from_email="noreply@eduverse.com",
+                recipient_list=[app.user.email],
+                fail_silently=True,
+            )
         else:
             messages.info(request, f"{app.full_name} is already rejected.")
         return redirect("admin:teachers_teacherapplication_changelist")

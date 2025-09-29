@@ -39,6 +39,7 @@ def home_view(request):
     return render(request, 'home.html')
 
 
+
 @login_required
 def profile_view(request):
     # Block admins from accessing frontend profiles
@@ -48,13 +49,14 @@ def profile_view(request):
     # Get the latest teacher application for this user
     latest_app = request.user.teacher_applications.order_by("-submitted_at").first()
 
-    # If approved, show a success notification
-    if latest_app and latest_app.status == "approved":
-        messages.success(request, "✅ Congratulations! Your application has been approved.")
+    if latest_app:
+        if latest_app.status == "approved":
+            messages.success(request, "✅ Congratulations! Your application has been approved.")
+        elif latest_app.status == "rejected":
+            messages.error(request, "❌ Unfortunately, your application has been rejected.")
 
-    # Pass latest_app into the template!
+    # Always return the page
     return render(request, "accounts/profile.html", {"latest_app": latest_app})
-
 @login_required
 def profile_update_view(request):
     if request.method == 'POST':
