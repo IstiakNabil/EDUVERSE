@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+  <a href="{% url 'profile_update' %}">Edit Profile</a>
   <h2>{{ user.username }}'s Profile</h2>
 
   <p>Username: {{ user.username }}</p>
@@ -21,6 +22,6 @@
   {% else %}
     <a href="{% url 'teachers:apply' %}">Apply</a>
   {% endif %}
-  <a href="{% url 'profile_update' %}">Edit Profile</a>
+
   <a href="{% url 'delete_account' %}">Delete Account</a>
 {% endblock %}
