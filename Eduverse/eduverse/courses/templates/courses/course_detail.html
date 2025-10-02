@@ -6,7 +6,7 @@
 <h1>{{ course.title }}</h1>
 
 {% if course.thumbnail %}
-    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" style="width: 300px; height: 200px;">
+    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
 {% endif %}
 
 <p><strong>Price: BDT.{{ course.price }}</strong></p>
@@ -15,29 +15,32 @@
 <h3>Description</h3>
 <p>{{ course.description|linebreaks }}</p>
 
-<!-- Course Actions -->
-<div style="border: 1px solid #ddd; padding: 10px; margin: 10px 0;">
-    <h4>Manage Course</h4>
-    <a href="{% url 'courses:course_edit' course.pk %}">Edit Course</a> |
-    <a href="{% url 'courses:add_videos' course.pk %}">Add Videos</a> |
-    <a href="{% url 'courses:course_delete' course.pk %}" onclick="return confirm('Are you sure you want to delete this course?')">Delete Course</a>
-</div>
 
-<div style="border: 1px solid green; padding: 10px; margin: 10px 0; background-color: #f0fff0;">
-    <h4>Enroll in this Course</h4>
-    <form method="post" action="{% url 'courses:enroll_course' course.pk %}">
-        {% csrf_token %}
-        <button type="submit" style="background-color: green; color: white; padding: 10px 20px; border: none; cursor: pointer;">
-            Enroll Now - BDT.{{ course.price }}
-        </button>
-    </form>
-</div>
+{% if user == course.instructor %}
+    <div>
+        <h4>Manage Course</h4>
+        <a href="{% url 'courses:course_edit' course.pk %}">Edit Course</a> |
+        <a href="{% url 'courses:add_videos' course.pk %}">Add Videos</a> |
+        <a href="{% url 'courses:course_delete' course.pk %}" onclick="return confirm('Are you sure you want to delete this course?')">Delete Course</a>
+    </div>
 
-<!-- Course Videos -->
+{% else %}
+    <div>
+        <h4>Enroll in this Course</h4>
+        <form method="post" action="{% url 'courses:enroll_course' course.pk %}">
+            {% csrf_token %}
+            <button type="submit">
+                Enroll Now - BDT.{{ course.price }}
+            </button>
+        </form>
+    </div>
+{% endif %}
+
+
 <h3>Course Videos ({{ videos.count }})</h3>
 {% if videos %}
     {% for video in videos %}
-        <div style="border: 1px solid #eee; margin: 5px 0; padding: 10px;">
+        <div>
             <h4>{{ video.title }}</h4>
             <video width="320" height="240" controls>
                 <source src="{{ video.video_file.url }}" type="video/mp4">
@@ -48,8 +51,11 @@
     {% endfor %}
 {% else %}
     <p>No videos uploaded yet.</p>
-    <p><a href="{% url 'courses:add_videos' course.pk %}">Add the first video!</a></p>
+    {% if user == course.instructor %}
+        <p><a href="{% url 'courses:add_videos' course.pk %}">Add the first video!</a></p>
+    {% endif %}
 {% endif %}
 
 <p><a href="{% url 'courses:course_list' %}">← Back to All Courses</a></p>
+
 {% endblock %}

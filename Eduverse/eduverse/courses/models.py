@@ -8,8 +8,7 @@ class Course(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="courses",
-        null = True,
-        blank = True
+
     )
 
     title = models.CharField(max_length=200)
@@ -45,7 +44,8 @@ class CourseVideo(models.Model):
 class Enrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
     enrolled_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='enrollments')
     amount_paid = models.DecimalField(max_digits=8, decimal_places=2)
 
     def __str__(self):
-        return f"Enrollment - {self.course.title}"
+        return f"{self.user.username} enrolled in {self.course.title}"
