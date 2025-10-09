@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="alert alert-success">
+        <h2>✅ Payment Successful!</h2>
+        <p>Your enrollment is complete. You can now access your course materials.</p>
+
+        {# FIX IS HERE: Use the correct namespaced URL name #}
+        <a href="{% url 'courses:my_courses' %}" class="btn btn-info">Go to My Courses</a>
+
+        <a href="{% url 'courses:course_list' %}" class="btn btn-secondary">Browse More Courses</a>
+    </div>
+</div>
+{% endblock content %}

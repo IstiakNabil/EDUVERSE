@@ -8,7 +8,8 @@ class Course(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="courses",
-
+        null = True,
+        blank = True
     )
 
     title = models.CharField(max_length=200)
@@ -42,10 +43,14 @@ class CourseVideo(models.Model):
 
 
 class Enrollment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='enrollments')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
     enrolled_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='enrollments')
     amount_paid = models.DecimalField(max_digits=8, decimal_places=2)
 
+    class Meta:
+                unique_together = ('user', 'course')
+
     def __str__(self):
+        # Let's make this more informative
         return f"{self.user.username} enrolled in {self.course.title}"
