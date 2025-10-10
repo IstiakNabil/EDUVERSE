@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    
+    <h1>Courses in: {{ category_name }}</h1>
+    <hr>
+
+    <div class="row">
+        {% for course in courses %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <a href="{{ course.get_absolute_url }}">
+                        {% if course.thumbnail %}
+                            <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                    </a>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text text-muted">By {{ course.instructor.username|default:"N/A" }}</p>
+                        <h4 class="mt-auto">BDT. {{ course.price }}</h4>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col">
+                <p>No courses have been added to the "{{ category_name }}" category yet.</p>
+            </div>
+        {% endfor %}
+    </div>
+    <a href="{% url 'home' %}" class="btn btn-secondary">← Back to Homepage</a>
+</div>
+{% endblock %}

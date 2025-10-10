@@ -1,0 +1,50 @@
+/* static/css/custom.css */
+
+/* Hero Section Styling */
+.hero-section {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/static/images/hero-background.jpg');
+    background-size: cover;
+    background-position: center;
+    padding: 120px 0;
+    color: white;
+    text-align: center;
+}
+
+.hero-section h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.hero-section p {
+    font-size: 1.25rem;
+    margin-bottom: 30px;
+}
+
+.search-form .form-control {
+    height: 50px;
+    border-radius: 5px 0 0 5px;
+    border: none;
+}
+
+.search-form .btn {
+    height: 50px;
+    border-radius: 0 5px 5px 0;
+}
+
+/* Course Card Styling */
+.course-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.course-card img {
+    height: 200px;
+    object-fit: cover;
+}

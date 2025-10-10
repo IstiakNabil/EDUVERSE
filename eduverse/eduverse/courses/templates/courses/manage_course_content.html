@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{# The redundant module loop has been removed from here. #}
+
+<div class="container mt-4">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'courses:manage_courses' %}">Manage Courses</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ course.title }}</li>
+      </ol>
+    </nav>
+
+    <h2>Manage Content for: {{ course.title }}</h2>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-7">
+            <h3>Existing Modules</h3>
+            {% for module in modules %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ module }}</h5>
+                        <p class="card-text">{{ module.description }}</p>
+                        <a href="{% url 'courses:add_video_to_module' module.pk %}" class="btn btn-primary btn-sm">Add Video</a>
+                        <a href="{% url 'courses:add_text_to_module' module.pk %}" class="btn btn-secondary btn-sm">Add Text</a>
+                        <a href="#" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="#" class="btn btn-danger btn-sm">Delete</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No modules created yet. Add your first one using the form.</p>
+            {% endfor %}
+        </div>
+        
+        <div class="col-md-5">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h3 class="card-title">Add New Module</h3>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-success">Create Module</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

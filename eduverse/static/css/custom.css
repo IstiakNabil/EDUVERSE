@@ -1,0 +1,88 @@
+/* static/css/custom.css */
+
+/* --- Hero Section Styling --- */
+.hero-section {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('/static/images/hero-background.jpg');
+    background-size: cover;
+    background-position: center;
+    padding: 140px 0;
+    color: white;
+}
+
+.hero-section h1 {
+    font-size: 3.2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+.search-bar-container {
+    background: white;
+    border-radius: 5px;
+    padding: 8px;
+    display: flex;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.search-bar-container input {
+    border: none;
+    box-shadow: none;
+    height: 45px;
+}
+.search-bar-container input:focus {
+    box-shadow: none;
+}
+
+.search-bar-container button {
+    width: 60px;
+    background-color: #1dbf73; /* Fiverr green */
+    border: none;
+}
+.search-bar-container button:hover {
+    background-color: #16a061;
+}
+
+.popular-tags {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.popular-tags a {
+    color: white;
+    border: 1px solid white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+.popular-tags a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Categories Section --- */
+.categories-section {
+    padding: 60px 0;
+    background-color: #f7f7f7;
+}
+
+.category-icon {
+    text-align: center;
+    color: #62646a;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.category-icon i {
+    font-size: 2.5rem; /* Icon size */
+    margin-bottom: 10px;
+}
+
+.category-icon p {
+    font-weight: 600;
+}
+
+.category-icon:hover {
+    color: #1dbf73; /* Fiverr green */
+}

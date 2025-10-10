@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'courses:manage_courses' %}">Manage Courses</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'courses:manage_course_content' module.course.pk %}">{{ module.course.title }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Add {{ content_type }}</li>
+      </ol>
+    </nav>
+
+    <h2>Add {{ content_type }} to: {{ module }}</h2>
+    <hr>
+    
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Save {{ content_type }}</button>
+    </form>
+</div>
+{% endblock %}

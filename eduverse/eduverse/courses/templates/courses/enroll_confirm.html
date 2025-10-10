@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Enroll in {{ course.title }} - EduVerse{% endblock %}
+
+{% block content %}
+<h1>Enroll in Course</h1>
+
+<div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0;">
+    {% if course.thumbnail %}
+        <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" style="width: 200px; height: 150px; float: left; margin-right: 15px;">
+    {% endif %}
+    
+    <h3>{{ course.title }}</h3>
+    <p>{{ course.description|truncatewords:30 }}</p>
+    <p><strong>Instructor:</strong> {{ course.creator.username }}</p>
+    <p><strong>Videos:</strong> {{ course.videos.count }}</p>
+    <div style="clear: both;"></div>
+</div>
+
+<div style="border: 1px solid green; padding: 15px; background-color: #f0fff0; margin: 10px 0;">
+    <h3>Enrollment Summary</h3>
+    <p><strong>Course Price: BDT.{{ course.price }}</strong></p>
+    <p>After enrollment, you will have access to:</p>
+    <ul>
+        <li>All {{ course.videos.count }} video{{ course.videos.count|pluralize }} in this course</li>
+        <li>Lifetime access to course content</li>
+        <li>Course completion tracking</li>
+    </ul>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" style="background-color: green; color: white; padding: 15px 30px; border: none; cursor: pointer; font-size: 16px;">
+            Confirm Enrollment - Pay BDT.{{ course.price }}
+        </button>
+        <a href="{% url 'courses:course_detail' course.pk %}" style="margin-left: 10px; padding: 15px 30px; text-decoration: none; background-color: #ccc; color: black;">
+            Cancel
+        </a>
+    </form>
+</div>
+
+{% endblock %}
