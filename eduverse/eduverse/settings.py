@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'teachers',
     'courses',
     'payments',
+
 ]
 
 MIDDLEWARE = [
@@ -138,6 +139,7 @@ from decouple import config
 import os
 
 
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = 'login'
@@ -153,3 +155,7 @@ EMAIL_HOST_PASSWORD = config('EMAIL_PASS')
 DEFAULT_FROM_EMAIL = "Eduverse <noreply@eduverse.com>"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+STORE_ID = config('STORE_ID')
+STORE_PASSWORD = config('STORE_PASSWORD')

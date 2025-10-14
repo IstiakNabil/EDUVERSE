@@ -5,12 +5,9 @@
     <div class="card">
         <div class="card-body">
             <h5 class="card-title">Course: {{ course.title }}</h5>
-            <p class="card-text">Instructor: {{ course.instructor.username|default:"N/A" }}</p>
-            <hr>
             <h4>Total Bill: BDT. {{ course.price }}</h4>
             <hr>
-            {# This link now goes to the selection page #}
-            <a href="{% url 'payments:payment_selection' course.pk %}" class="btn btn-success">Proceed to Payment</a>
+            <a href="{% url 'payments:initiate_payment' course.pk %}" class="btn btn-success">Pay with SSLCommerz</a>
             <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
         </div>
     </div>
