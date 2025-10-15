@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Your Inbox</h1>
+    <hr>
+    <div class="list-group">
+        {% for conv in conversations %}
+            <a href="{% url 'messaging:conversation_detail' conv.id %}" class="list-group-item list-group-item-action">
+                <h5>Conversation for: {{ conv.live_class.title }}</h5>
+                <p class.="mb-1">
+                    {% if request.user == conv.student %}
+                        With instructor: {{ conv.teacher.username }}
+                    {% else %}
+                        With student: {{ conv.student.username }}
+                    {% endif %}
+                </p>
+            </a>
+        {% empty %}
+            <p>You have no conversations yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

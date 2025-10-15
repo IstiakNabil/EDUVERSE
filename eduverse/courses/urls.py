@@ -35,5 +35,7 @@ urlpatterns = [
     path('manage/<int:course_pk>/content/', views.manage_course_content_view, name='manage_course_content'),
     path('module/<int:module_pk>/add-video/', views.add_video_view, name='add_video_to_module'),
     path('module/<int:module_pk>/add-text/', views.add_text_content_view, name='add_text_to_module'),
+    path('<int:pk>/rate/', views.rate_course, name='rate_course'),
+
 
 ]

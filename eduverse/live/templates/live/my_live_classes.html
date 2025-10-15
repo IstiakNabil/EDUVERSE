@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}My Live Classes - Eduverse{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>My Recent Live Classes</h1>
+    <p>This page shows live classes you have enrolled in within the last 3 days.</p>
+    <hr>
+
+    <div class="row">
+        {% for enrollment in enrollments %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 course-card">
+                    <a href="{% url 'live:live_class_detail' enrollment.live_class.pk %}">
+                        {% if enrollment.live_class.thumbnail %}
+                            <img src="{{ enrollment.live_class.thumbnail.url }}" class="card-img-top" alt="{{ enrollment.live_class.title }}" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                    </a>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ enrollment.live_class.title }}</h5>
+                        <p class="card-text text-muted">By {{ enrollment.live_class.instructor.username }}</p>
+                        <p class="card-text"><small>Starts: {{ enrollment.live_class.start_time|date:"F j, Y \a\t P" }}</small></p>
+                        <div class="mt-auto">
+                            <a href="{% url 'live:live_class_detail' enrollment.live_class.pk %}" class="btn btn-primary">Go to Class</a>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <small class="text-muted">Enrolled on: {{ enrollment.enrolled_at|date:"F j, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col">
+                <p>You have not enrolled in any live classes in the last 3 days.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

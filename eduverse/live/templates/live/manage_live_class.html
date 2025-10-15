@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Manage Live Class: {{ live_class.title }}</h2>
+
+    <p><strong>Created on:</strong> {{ live_class.created_at|date:"F d, Y" }}</p>
+
+    <div class="mt-3">
+        <a href="{% url 'live:edit_live_class' live_class.pk %}" class="btn btn-warning">Edit Live Class</a>
+        <a href="{% url 'live:delete_live_class' live_class.pk %}" class="btn btn-danger">Delete Live Class</a>
+        <a href="{% url 'live:add_live_class_video' live_class.pk %}" class="btn btn-success">Add Video</a>
+    </div>
+
+    <hr>
+    <h4>Live Class Videos ({{ live_class.videos.count }})</h4>
+    {% if live_class.videos.exists %}
+        <ul>
+            {% for video in live_class.videos.all %}
+                <li>{{ video.title }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No videos uploaded yet.</p>
+    {% endif %}
+
+    <a href="{% url 'live:live_class_detail' live_class.pk %}" class="btn btn-secondary mt-3">← Back to Live Class Details</a>
+</div>
+{% endblock %}

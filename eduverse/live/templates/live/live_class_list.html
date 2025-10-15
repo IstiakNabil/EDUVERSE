@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Live Classes - Eduverse{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Available Live Classes</h1>
+        {# This button will only show up for approved teachers #}
+        {% if user.is_authenticated and latest_teacher_app and latest_teacher_app.status == "approved" %}
+            <a href="{% url 'live:create_live_class' %}" class="btn btn-primary">Create New Live Class</a>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        {% for class in classes %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 course-card"> {# Reusing the .course-card style for hover effects #}
+                    <a href="{% url 'live:live_class_detail' class.pk %}">
+                        {% if class.thumbnail %}
+                            <img src="{{ class.thumbnail.url }}" class="card-img-top" alt="{{ class.title }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'images/default-thumbnail.jpg' %}" class="card-img-top" alt="Default thumbnail" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                    </a>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ class.title }}</h5>
+                        <p class="card-text text-muted">By {{ class.instructor.username }}</p>
+                        <p class="card-text"><small>Starts: {{ class.start_time|date:"F j, Y \a\t P" }}</small></p>
+                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">BDT. {{ class.price }}</h4>
+                            <a href="{% url 'live:live_class_detail' class.pk %}" class="btn btn-success">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col">
+                <p>There are no live classes scheduled at the moment. Please check back soon!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

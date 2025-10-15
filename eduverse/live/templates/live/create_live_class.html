@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Create Live Class</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="id_title" class="form-label">Live Class Title:</label>
+            {{ form.title }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_description" class="form-label">Description:</label>
+            {{ form.description }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_thumbnail" class="form-label">Thumbnail Image:</label>
+            {{ form.thumbnail }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_price" class="form-label">Price (BDT.):</label>
+            {{ form.price }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Live Class</button>
+        <a href="{% url 'live:live_class_list' %}" class="btn btn-secondary">Cancel</a>
+
+    </form>
+</div>
+{% endblock %}

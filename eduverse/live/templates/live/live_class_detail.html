@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>{{ live_class.title }}</h2>
+            <p class="text-muted">By {{ live_class.instructor.username }} | Starts on: {{ live_class.start_time|date:"F j, Y \\a\\t P" }}</p>
+            <hr>
+            <h4>Description</h4>
+            <p>{{ live_class.description|linebreaks }}</p>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                {% if live_class.thumbnail %}
+                    <img src="{{ live_class.thumbnail.url }}" class="card-img-top" alt="{{ live_class.title }}">
+                {% endif %}
+                <div class="card-body">
+                    <h3 class="card-title">BDT. {{ live_class.price }}</h3>
+                    <p class="card-text">Includes access to the live session and any provided materials.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <div class="row">
+        <div class="col-md-8">
+
+            {% if user == live_class.instructor %}
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Instructor Panel</h5>
+                        <p>Remember to send the meeting link to enrolled students via the messaging system before the class starts.</p>
+                        <a href="{% url 'live:edit_live_class' live_class.pk %}" class="btn btn-primary">Edit Details</a>
+                        <a href="{% url 'messaging:inbox' %}" class="btn btn-info">Go to Inbox</a>
+                    </div>
+                </div>
+
+            {% elif is_enrolled %}
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">You are enrolled! ✅</h5>
+                        <p>Your instructor will send the meeting link through the private messaging system before the class starts. You can use the buttons below to contact them or check your inbox.</p>
+                        <a href="{% url 'messaging:start_conversation' live_class.pk %}" class="btn btn-light mt-2">Contact Instructor</a>
+                        <a href="{% url 'messaging:inbox' %}" class="btn btn-outline-light mt-2">Go to Inbox</a>
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Enroll in this Live Class</h5>
+                        <p>After enrolling, you'll be able to communicate with the instructor to get the class link.</p>
+                        <a href="{% url 'live:live_checkout' live_class.pk %}" class="btn btn-light">Enroll Now - BDT. {{ live_class.price }}</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- ⭐ Ratings Section ⭐ -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <h3>Ratings</h3>
+            {% for rating in live_class.ratings.all %}
+                <p>
+                    <strong>{{ rating.user.username }}</strong>: {{ rating.rating }}/5<br>
+                    {{ rating.review }}
+                </p>
+            {% empty %}
+                <p>No ratings yet.</p>
+            {% endfor %}
+
+            {% if is_enrolled %}
+                <a href="{% url 'live:rate_live_class' live_class.pk %}" class="btn btn-outline-primary mt-2">
+                    Rate this Live Class
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'live:live_class_list' %}" class="btn btn-secondary">← Back to All Live Classes</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h3>Conversation for: {{ conversation.live_class.title }}</h3>
+    <p>
+        {% if request.user == conversation.student %}
+            With instructor: <strong>{{ conversation.teacher.username }}</strong>
+        {% else %}
+            With student: <strong>{{ conversation.student.username }}</strong>
+        {% endif %}
+    </p>
+    <hr>
+    <div class="chat-box" style="height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+        {% for message in conversation.messages.all %}
+            <div class="mb-2 {% if message.sender == request.user %}text-end{% endif %}">
+                <small class="text-muted">{{ message.sender.username }} - {{ message.timestamp|date:"M d, P" }}</small>
+                <div class="d-inline-block p-2 rounded {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light{% endif %}">
+                    {{ message.content|linebreaksbr }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="input-group">
+            <textarea name="content" class="form-control" rows="3" placeholder="Type your message..." required></textarea>
+            <button type="submit" class="btn btn-success">Send</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

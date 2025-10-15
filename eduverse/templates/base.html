@@ -23,7 +23,11 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'courses:course_list' %}">Courses</a>
+
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'live:live_class_list' %}">Live Classes</a>
+                   </li>
                 </ul>
 
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
@@ -35,6 +39,8 @@
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
                                 <li><a class="dropdown-item" href="{% url 'profile' %}">My Profile</a></li>
                                 <li><a class="dropdown-item" href="{% url 'courses:my_courses' %}">My Enrolled Courses</a></li>
+                                <li><a class="dropdown-item" href="{% url 'live:my_live_classes' %}">My Live Classes</a></li>
+                                <li><a class="dropdown-item" href="{% url 'messaging:inbox' %}">Inbox</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 {% if latest_teacher_app and latest_teacher_app.status == "approved" %}
                     <li><a class="dropdown-item" href="{% url 'courses:course_create' %}">✅ Create a Course</a></li>

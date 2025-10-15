@@ -5,6 +5,11 @@ from .models import Course, CourseVideo, Enrollment
 from .forms import CourseForm, VideoForm
 from .models import Course, Module # 👈 Add Module
 from .forms import ModuleForm, VideoForm, TextContentForm
+from django.core.validators import MinValueValidator, MaxValueValidator
+from .models import CourseRating
+from .forms import CourseRatingForm
+from django.conf import settings
+from .models import Course, CourseVideo, Enrollment, Module, CourseRating
 
 def course_list(request):
     """Display all courses"""
@@ -260,3 +265,31 @@ def add_text_content_view(request, module_pk):
         'module': module,
     }
     return render(request, 'courses/add_content_form.html', context)
+
+
+
+@login_required
+def rate_course(request, pk):
+    course = get_object_or_404(Course, pk=pk)
+    enrollment = Enrollment.objects.filter(user=request.user, course=course).first()
+
+    # Only enrolled students can rate
+    if not enrollment:
+        messages.error(request, "You must be enrolled to rate this course.")
+        return redirect('courses:course_detail', pk=pk)
+
+    # Assume course is “finished” — you can later add a completion flag if needed.
+    if request.method == 'POST':
+        form = CourseRatingForm(request.POST)
+        if form.is_valid():
+            rating_obj, created = CourseRating.objects.update_or_create(
+                user=request.user,
+                course=course,
+                defaults=form.cleaned_data
+            )
+            messages.success(request, "Your rating has been submitted.")
+            return redirect('courses:course_detail', pk=pk)
+    else:
+        form = CourseRatingForm()
+
+    return render(request, 'courses/rate_course.html', {'form': form, 'course': course})

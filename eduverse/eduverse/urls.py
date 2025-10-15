@@ -30,8 +30,9 @@ urlpatterns = [
     path("teachers/", include("teachers.urls")),
     path('courses/', include('courses.urls')),
     path('payment/', include('payments.urls')),
+    path('live/', include('live.urls')),
     #password Reset
-
+    path('messages/', include('messaging.urls')),
     path('password-reset/', auth_views.PasswordResetView.as_view(template_name='accounts/password_reset.html'),
          name='password_reset'),
     path('password-reset/done/',

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h4>Checkout for: {{ live_class.title }}</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Instructor:</strong> {{ live_class.instructor.username }}</p>
+            <p><strong>Starts on:</strong> {{ live_class.start_time|date:"F j, Y \a\t P" }}</p>
+            <hr>
+            <h5 class="card-title">Total Amount: BDT. {{ live_class.price }}</h5>
+            <hr>
+
+            <a href="{% url 'payments:initiate_live_class_payment' live_class.pk %}" class="btn btn-success">Proceed to Pay with SSLCommerz</a>
+
+            {# 👇 This link is now more direct and guaranteed to work 👇 #}
+            <a href="{% url 'live:live_class_detail' live_class.pk %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

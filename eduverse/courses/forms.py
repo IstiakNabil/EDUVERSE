@@ -2,6 +2,7 @@
 
 from django import forms
 from .models import Course, Module, CourseVideo,TextContent
+from .models import CourseRating
 
 class CourseForm(forms.ModelForm):
     class Meta:
@@ -61,3 +62,7 @@ class TextContentForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Title of the article or text'}),
             'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 10, 'placeholder': 'Write your theory content here...'}),
         }
+class CourseRatingForm(forms.ModelForm):
+    class Meta:
+        model = CourseRating
+        fields = ['rating', 'review']
