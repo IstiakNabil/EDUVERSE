@@ -1,42 +1,89 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import Course, CourseVideo, Enrollment
-from .forms import CourseForm, VideoForm
-from .models import Course, Module # 👈 Add Module
+from .forms import CourseForm
 from .forms import ModuleForm, VideoForm, TextContentForm
-from django.core.validators import MinValueValidator, MaxValueValidator
-from .models import CourseRating
-from .forms import CourseRatingForm
-from django.conf import settings
-from .models import Course, CourseVideo, Enrollment, Module, CourseRating
+from .forms import ReviewForm
+from django.contrib.contenttypes.models import ContentType
+from .models import Module, CourseVideo, TextContent, Enrollment, UserProgress, Review
+from django.db.models import Q
+from .models import Course
+
 
 def course_list(request):
-    """Display all courses"""
-    courses = Course.objects.all()
-    return render(request, 'courses/course_list.html', {'courses': courses})
+    """Display all courses, with optional search and filtering."""
+    queryset = Course.objects.all()
+    query = request.GET.get('q', '')
+    category = request.GET.get('category', '')
+
+    # If a search query is submitted
+    if query:
+        queryset = queryset.filter(
+            Q(title__icontains=query) | Q(description__icontains=query)
+        )
+
+    # If a category is selected from the dropdown
+    if category:
+        queryset = queryset.filter(category=category)
+
+    context = {
+        'courses': queryset,
+        'categories': Course.Category.choices,  # Pass all category choices to the template
+        'current_query': query,
+        'current_category': category,
+    }
+    return render(request, 'courses/course_list.html', context)
 
 
-@login_required
 def course_detail(request, pk):
-    """Display course details and module content"""
     course = get_object_or_404(Course, pk=pk)
-
-    # videos = course.videos.all()  # 👈 1. REMOVE this incorrect and redundant line
-
-    # This correctly gets all modules and their related content efficiently
     modules = course.modules.all().prefetch_related('videos', 'text_contents')
-
-    # Check for enrollment status
     is_enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
+
+    completed_content_ids = {}
+    if request.user.is_authenticated:
+        progress = UserProgress.objects.filter(user=request.user)
+        completed_content_ids['text'] = {p.object_id for p in progress if p.content_type.model == 'textcontent'}
+        completed_content_ids['video'] = {p.object_id for p in progress if p.content_type.model == 'coursevideo'}
+
+    # --- Logic for unlocking modules ---
+    unlocked = True
+    for module in modules:
+        module.is_unlocked = unlocked
+        if unlocked:
+            all_content_complete = True
+            for video in module.videos.all():
+                if video.id not in completed_content_ids['video']:
+                    all_content_complete = False
+                    break
+            if not all_content_complete:
+                unlocked = False
+                continue
+
+            for text in module.text_contents.all():
+                if text.id not in completed_content_ids['text']:
+                    all_content_complete = False
+                    break
+            unlocked = all_content_complete
+
+    # --- Logic for allowing reviews ---
+    can_review = False
+    if is_enrolled:
+        all_content_count = sum(m.videos.count() + m.text_contents.count() for m in modules)
+        completed_count = len(completed_content_ids.get('text', [])) + len(completed_content_ids.get('video', []))
+        if all_content_count > 0 and all_content_count == completed_count:
+            if not course.reviews.filter(user=request.user).exists():
+                can_review = True
 
     context = {
         'course': course,
         'modules': modules,
-        'is_enrolled': is_enrolled,  # 👈 2. ADD is_enrolled to the context
+        'is_enrolled': is_enrolled,
+        'completed_content_ids': completed_content_ids,
+        'review_form': ReviewForm(),
+        'can_review': can_review,
     }
     return render(request, 'courses/course_detail.html', context)
-
 @login_required
 def course_create(request):
     latest_app = request.user.teacher_applications.order_by("-submitted_at").first()
@@ -266,30 +313,27 @@ def add_text_content_view(request, module_pk):
     }
     return render(request, 'courses/add_content_form.html', context)
 
-
+@login_required
+def mark_as_complete_view(request, model_id, pk):
+    content_type = get_object_or_404(ContentType, pk=model_id)
+    model_class = content_type.model_class()
+    content_object = get_object_or_404(model_class, pk=pk)
+    UserProgress.objects.get_or_create(user=request.user, content_type=content_type, object_id=pk)
+    if isinstance(content_object, (CourseVideo, TextContent)):
+        return redirect('courses:course_detail', pk=content_object.module.course.pk)
+    return redirect('home')
 
 @login_required
-def rate_course(request, pk):
-    course = get_object_or_404(Course, pk=pk)
-    enrollment = Enrollment.objects.filter(user=request.user, course=course).first()
-
-    # Only enrolled students can rate
-    if not enrollment:
-        messages.error(request, "You must be enrolled to rate this course.")
-        return redirect('courses:course_detail', pk=pk)
-
-    # Assume course is “finished” — you can later add a completion flag if needed.
+def add_review_view(request, model_name, pk):
+    content_type = get_object_or_404(ContentType, model=model_name)
+    model_class = content_type.model_class()
+    obj = get_object_or_404(model_class, pk=pk)
     if request.method == 'POST':
-        form = CourseRatingForm(request.POST)
+        form = ReviewForm(request.POST)
         if form.is_valid():
-            rating_obj, created = CourseRating.objects.update_or_create(
-                user=request.user,
-                course=course,
-                defaults=form.cleaned_data
-            )
-            messages.success(request, "Your rating has been submitted.")
-            return redirect('courses:course_detail', pk=pk)
-    else:
-        form = CourseRatingForm()
-
-    return render(request, 'courses/rate_course.html', {'form': form, 'course': course})
+            review = form.save(commit=False)
+            review.user = request.user
+            review.content_object = obj
+            review.save()
+            messages.success(request, "Your review has been submitted. Thank you!")
+    return redirect(obj.get_absolute_url())

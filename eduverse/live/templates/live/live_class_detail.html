@@ -5,7 +5,7 @@
     <div class="row">
         <div class="col-md-8">
             <h2>{{ live_class.title }}</h2>
-            <p class="text-muted">By {{ live_class.instructor.username }} | Starts on: {{ live_class.start_time|date:"F j, Y \\a\\t P" }}</p>
+            <p class="text-muted">By {{ live_class.instructor.username }} | Starts on: {{ live_class.start_time|date:"F j, Y \a\t P" }}</p>
             <hr>
             <h4>Description</h4>
             <p>{{ live_class.description|linebreaks }}</p>
@@ -23,7 +23,7 @@
             </div>
         </div>
     </div>
-
+    
     <hr class="my-4">
 
     <div class="row">
@@ -62,24 +62,34 @@
     </div>
 
     <hr class="my-4">
-
-    <!-- ⭐ Ratings Section ⭐ -->
-    <div class="row mt-4">
+    <div class="row">
         <div class="col-md-8">
-            <h3>Ratings</h3>
-            {% for rating in live_class.ratings.all %}
-                <p>
-                    <strong>{{ rating.user.username }}</strong>: {{ rating.rating }}/5<br>
-                    {{ rating.review }}
-                </p>
+            <h4>Reviews ({{ live_class.reviews.count }})</h4>
+            {% for review in live_class.reviews.all %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <strong>{{ review.user.username }}</strong> rated it <strong>{{ review.rating }}/5 Stars</strong>
+                        <p class="card-text mt-2">{{ review.comment|linebreaksbr }}</p>
+                        <small class="text-muted">{{ review.created_at|date:"F j, Y" }}</small>
+                    </div>
+                </div>
             {% empty %}
-                <p>No ratings yet.</p>
+                <p>No reviews yet for this class.</p>
             {% endfor %}
 
-            {% if is_enrolled %}
-                <a href="{% url 'live:rate_live_class' live_class.pk %}" class="btn btn-outline-primary mt-2">
-                    Rate this Live Class
-                </a>
+            {# This form only appears if the can_review flag from the view is true #}
+            {% if can_review %}
+                <div class="card my-4 bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Leave a Review</h5>
+                        <p>Now that the class has finished, please share your experience.</p>
+                        <form action="{% url 'courses:add_review' 'liveclass' live_class.pk %}" method="post">
+                            {% csrf_token %}
+                            {{ review_form.as_p }}
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                        </form>
+                    </div>
+                </div>
             {% endif %}
         </div>
     </div>

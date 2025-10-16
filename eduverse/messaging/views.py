@@ -5,7 +5,8 @@ from django.db.models import Q
 from django.contrib import messages
 from .models import Conversation, Message
 from live.models import LiveClass, LiveClassEnrollment
-
+from django.core.mail import send_mail # 👈 Import send_mail
+from django.urls import reverse
 
 @login_required
 def start_conversation_view(request, class_pk):

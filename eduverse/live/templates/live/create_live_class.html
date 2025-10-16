@@ -3,6 +3,7 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Create Live Class</h2>
+    <hr>
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
@@ -24,6 +25,11 @@
         <div class="mb-3">
             <label for="id_price" class="form-label">Price (BDT.):</label>
             {{ form.price }}
+        </div>
+
+        <div class="mb-3">
+            <label for="id_start_time" class="form-label">Start Time:</label>
+            {{ form.start_time }}
         </div>
 
         <button type="submit" class="btn btn-primary">Create Live Class</button>

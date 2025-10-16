@@ -49,6 +49,7 @@
                             </div>
                             <a href="{% url 'courses:course_create' %}" class="btn btn-success">Create a New Course</a>
                             <a href="{% url 'courses:manage_courses' %}" class="btn btn-info">Manage My Courses</a>
+                            <a href="{% url 'live:manage_live_classes' %}" class="btn btn-info">Manage Live Classes</a>
                             {# You could add a link to a dashboard of their created courses here later #}
 
                         {% elif latest_app.status == "rejected" %}

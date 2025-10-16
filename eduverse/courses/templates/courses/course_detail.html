@@ -5,15 +5,11 @@
     <div class="row">
         <div class="col-md-8">
             <h1>{{ course.title }}</h1>
-            <p class="text-muted">
-                By {{ course.instructor.username|default:"N/A" }} |
-                Created on: {{ course.created_at|date:"F j, Y" }}
-            </p>
+            <p class="text-muted">By {{ course.instructor.username|default:"N/A" }} | Created on: {{ course.created_at|date:"F j, Y" }}</p>
             <hr>
             <h3>Description</h3>
             <p>{{ course.description|linebreaks }}</p>
         </div>
-
         <div class="col-md-4">
             <div class="card">
                 {% if course.thumbnail %}
@@ -31,16 +27,13 @@
 
     <div class="row">
         <div class="col-md-8">
-
             {% if user == course.instructor %}
                 <h3>Instructor Dashboard</h3>
                 <div class="card bg-light mb-4">
                     <div class="card-body">
                         <h5 class="card-title">Manage Your Course</h5>
-                        <p>As the instructor, you can edit details and add content.</p>
                         <a href="{% url 'courses:course_edit' course.pk %}" class="btn btn-primary">Edit Course Details</a>
                         <a href="{% url 'courses:manage_course_content' course.pk %}" class="btn btn-info">Add/Manage Content</a>
-                        <a href="{% url 'courses:course_delete' course.pk %}" class="btn btn-danger">Delete Course</a>
                     </div>
                 </div>
             {% endif %}
@@ -51,78 +44,69 @@
                     {% for module in modules %}
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="heading{{ module.id }}">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ module.id }}">
-                                    <strong>{{ module }}</strong>
+                                <button class="accordion-button {% if not module.is_unlocked %}collapsed disabled{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ module.id }}">
+                                    {% if not module.is_unlocked %}🔒{% endif %} <strong>{{ module }}</strong>
                                 </button>
                             </h2>
                             <div id="collapse{{ module.id }}" class="accordion-collapse collapse" data-bs-parent="#modulesAccordion">
                                 <div class="accordion-body">
-                                    {% if module.description %}
-                                        <p class="text-muted">{{ module.description|linebreaks }}</p>
-                                        <hr>
-                                    {% endif %}
-
-                                    {% for text in module.text_contents.all %}
-                                        <div class="content-item mb-4">
-                                            <h5>📄 {{ text.title }}</h5>
-                                            <div class="p-3 bg-light rounded">
-                                                {{ text.content|linebreaks }}
+                                    {% if module.is_unlocked %}
+                                        {% for text in module.text_contents.all %}
+                                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                                <span>📄 {{ text.title }}</span>
+                                                {% if text.id in completed_content_ids.text %}
+                                                    <span class="badge bg-success">✓ Completed</span>
+                                                {% else %}<form action="{% url 'courses:mark_as_complete' text.get_content_type_id text.pk %}" method="post">{% csrf_token %}<button type="submit" class="btn btn-outline-success btn-sm">Mark as Complete</button></form>{% endif %}
                                             </div>
-                                        </div>
-                                    {% endfor %}
-
-                                    {% for video in module.videos.all %}
-                                        <div class="content-item mb-4">
-                                            <h5>🎬 {{ video.title }}</h5>
-                                            <video width="100%" controls controlsList="nodownload">
-                                                <source src="{{ video.video_file.url }}" type="video/mp4">
-                                                Your browser does not support the video tag.
-                                            </video>
-                                        </div>
-                                    {% endfor %}
+                                        {% endfor %}
+                                        {% for video in module.videos.all %}
+                                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                                <span>🎬 {{ video.title }}</span>
+                                                {% if video.id in completed_content_ids.video %}
+                                                    <span class="badge bg-success">✓ Completed</span>
+                                                {% else %}<form action="{% url 'courses:mark_as_complete' video.get_content_type_id video.pk %}" method="post">{% csrf_token %}<button type="submit" class="btn btn-outline-success btn-sm">Mark as Complete</button></form>{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <p>Please complete the previous module to unlock this content.</p>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
-                    {% empty %}
-                        <p>You have not added any content to this course yet.</p>
                     {% endfor %}
                 </div>
-
-                <!-- ✅ Step 6: Ratings Section -->
-                <hr class="my-4">
-                <h3>Ratings & Reviews</h3>
-
-                {% for rating in course.ratings.all %}
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <p><strong>{{ rating.user.username }}</strong> rated it {{ rating.rating }}/5</p>
-                            {% if rating.review %}
-                                <p class="text-muted">{{ rating.review }}</p>
-                            {% endif %}
-                            <small class="text-secondary">{{ rating.created_at|date:"F j, Y" }}</small>
-                        </div>
-                    </div>
-                {% empty %}
-                    <p>No ratings yet. Be the first to review!</p>
-                {% endfor %}
-
-                {% if is_enrolled %}
-                    <a href="{% url 'courses:rate_course' course.pk %}" class="btn btn-outline-primary">
-                        Rate this Course
-                    </a>
-                {% endif %}
 
             {% else %}
                 <h3>Enroll Now</h3>
                 <div class="card bg-success text-white">
                     <div class="card-body">
-                        <h5 class="card-title">Get Full Access</h5>
-                        <p>Enroll in this course to view all modules and content.</p>
                         <a href="{% url 'courses:enroll_course' course.pk %}" class="btn btn-light btn-lg">
                             Enroll for BDT. {{ course.price }}
                         </a>
                     </div>
                 </div>
+            {% endif %}
+
+            <hr class="my-4">
+            <h4>Reviews ({{ course.reviews.count }})</h4>
+            {% for review in course.reviews.all %}
+                <div class="card mb-2"><div class="card-body">
+                    <strong>{{ review.user.username }}</strong> - <strong>{{ review.rating }}/5 Stars</strong>
+                    <p class="card-text mt-2">{{ review.comment|linebreaksbr }}</p>
+                </div></div>
+            {% empty %}
+                <p>No reviews yet.</p>
+            {% endfor %}
+
+            {% if can_review %}
+            <div class="card my-4 bg-light"><div class="card-body">
+                <h5 class="card-title">Leave a Review</h5>
+                <form action="{% url 'courses:add_review' 'course' course.pk %}" method="post">
+                    {% csrf_token %}
+                    {{ review_form.as_p }}
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+            </div></div>
             {% endif %}
         </div>
     </div>

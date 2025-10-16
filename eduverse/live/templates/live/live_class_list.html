@@ -6,17 +6,27 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Available Live Classes</h1>
-        {# This button will only show up for approved teachers #}
+        <h1>Upcoming Live Classes</h1>
         {% if user.is_authenticated and latest_teacher_app and latest_teacher_app.status == "approved" %}
             <a href="{% url 'live:create_live_class' %}" class="btn btn-primary">Create New Live Class</a>
         {% endif %}
     </div>
 
+    <div class="card bg-light mb-4">
+        <div class="card-body">
+            <form method="GET" action="{% url 'live:live_class_list' %}">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Search live classes by keyword..." value="{{ current_query }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="row">
         {% for class in classes %}
             <div class="col-md-4 mb-4">
-                <div class="card h-100 course-card"> {# Reusing the .course-card style for hover effects #}
+                <div class="card h-100 course-card">
                     <a href="{% url 'live:live_class_detail' class.pk %}">
                         {% if class.thumbnail %}
                             <img src="{{ class.thumbnail.url }}" class="card-img-top" alt="{{ class.title }}" style="height: 200px; object-fit: cover;">
@@ -37,7 +47,7 @@
             </div>
         {% empty %}
             <div class="col">
-                <p>There are no live classes scheduled at the moment. Please check back soon!</p>
+                <p>No live classes found matching your search. Please check back soon!</p>
             </div>
         {% endfor %}
     </div>
