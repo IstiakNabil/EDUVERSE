@@ -6,6 +6,9 @@
 {% block content %}
 <div class="container mt-4">
     <h1>Browse Our Courses</h1>
+        {% if user.is_authenticated and latest_teacher_app and latest_teacher_app.status == "approved" %}
+            <a href="{% url 'courses:course_create' %}" class="btn btn-primary">Create New Course</a>
+        {% endif %}
     <hr>
 
     <div class="card bg-light mb-4">

@@ -93,7 +93,10 @@ class Enrollment(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_enrollments')
     enrolled_at = models.DateTimeField(auto_now_add=True)
     amount_paid = models.DecimalField(max_digits=8, decimal_places=2)
+    instructor_share = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    platform_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0)
 
+    # ...
     class Meta:
         unique_together = ('user', 'course')
 

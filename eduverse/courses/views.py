@@ -35,25 +35,44 @@ def course_list(request):
     return render(request, 'courses/course_list.html', context)
 
 
+# courses/views.py
+
 def course_detail(request, pk):
     course = get_object_or_404(Course, pk=pk)
     modules = course.modules.all().prefetch_related('videos', 'text_contents')
-    is_enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
 
+    # --- Set default values for guests ---
+    is_enrolled = False
     completed_content_ids = {}
+    can_review = False
+
+    # --- Only run user-specific checks if the user is logged in ---
     if request.user.is_authenticated:
+        # Check for enrollment status
+        is_enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
+
+        # Get progress for the logged-in user
         progress = UserProgress.objects.filter(user=request.user)
         completed_content_ids['text'] = {p.object_id for p in progress if p.content_type.model == 'textcontent'}
         completed_content_ids['video'] = {p.object_id for p in progress if p.content_type.model == 'coursevideo'}
 
-    # --- Logic for unlocking modules ---
+        # Logic for allowing reviews (only check if enrolled)
+        if is_enrolled:
+            all_content_count = sum(m.videos.count() + m.text_contents.count() for m in modules)
+            completed_count = len(completed_content_ids.get('text', [])) + len(completed_content_ids.get('video', []))
+            if all_content_count > 0 and all_content_count == completed_count:
+                if not course.reviews.filter(user=request.user).exists():
+                    can_review = True
+
+    # Logic for unlocking modules
+    # This loop now safely runs for both guests and logged-in users
     unlocked = True
     for module in modules:
         module.is_unlocked = unlocked
         if unlocked:
             all_content_complete = True
             for video in module.videos.all():
-                if video.id not in completed_content_ids['video']:
+                if video.id not in completed_content_ids.get('video', set()):
                     all_content_complete = False
                     break
             if not all_content_complete:
@@ -61,19 +80,10 @@ def course_detail(request, pk):
                 continue
 
             for text in module.text_contents.all():
-                if text.id not in completed_content_ids['text']:
+                if text.id not in completed_content_ids.get('text', set()):
                     all_content_complete = False
                     break
             unlocked = all_content_complete
-
-    # --- Logic for allowing reviews ---
-    can_review = False
-    if is_enrolled:
-        all_content_count = sum(m.videos.count() + m.text_contents.count() for m in modules)
-        completed_count = len(completed_content_ids.get('text', [])) + len(completed_content_ids.get('video', []))
-        if all_content_count > 0 and all_content_count == completed_count:
-            if not course.reviews.filter(user=request.user).exists():
-                can_review = True
 
     context = {
         'course': course,

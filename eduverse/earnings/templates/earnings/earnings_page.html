@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h1>My Earnings</h1>
+    <hr>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-center bg-success text-white mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Lifetime Earnings</h5>
+                    <p class="card-text fs-3">BDT. {{ total_earnings|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center bg-primary text-white mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Available for Withdrawal</h5>
+                    <p class="card-text fs-3">BDT. {{ current_balance|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center bg-warning text-dark mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Withdrawal</h5>
+                    <p class="card-text fs-3">BDT. {{ pending_withdrawal|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card my-4">
+        <div class="card-body">
+            <h3 class="card-title">Request a Withdrawal</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="input-group">
+                    <span class="input-group-text">BDT.</span>
+                    <input type="number" name="amount" class="form-control" placeholder="0.00" step="0.01" max="{{ current_balance }}">
+                    <button type="submit" class="btn btn-success">Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <h3>Recent Earnings</h3>
+    <ul class="list-group mb-4">
+        {% for earning in recent_earnings %}
+            <li class="list-group-item">Earned BDT. {{ earning.amount|floatformat:2 }} on {{ earning.timestamp|date:"F j, Y" }}</li>
+        {% empty %}
+            <li class="list-group-item">No recent earnings.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Withdrawal History</h3>
+    <ul class="list-group">
+        {% for withdrawal in withdrawal_history %}
+            <li class="list-group-item">Requested BDT. {{ withdrawal.amount|floatformat:2 }} on {{ withdrawal.requested_at|date:"F j, Y" }} - Status: <span class="badge bg-secondary">{{ withdrawal.get_status_display }}</span></li>
+        {% empty %}
+            <li class="list-group-item">No withdrawal history.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

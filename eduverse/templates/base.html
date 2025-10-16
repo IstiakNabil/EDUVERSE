@@ -43,7 +43,8 @@
                                 <li><a class="dropdown-item" href="{% url 'messaging:inbox' %}">Inbox</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 {% if latest_teacher_app and latest_teacher_app.status == "approved" %}
-                    <li><a class="dropdown-item" href="{% url 'courses:course_create' %}">✅ Create a Course</a></li>
+                              <li><a class="dropdown-item" href="{% url 'courses:course_create' %}">✅ Create a Course</a></li>
+                             <li><a class="dropdown-item" href="{% url 'earnings:earnings_page' %}">💰 My Earnings</a></li>
 
                 {% elif latest_teacher_app and latest_teacher_app.status == "pending" %}
                     <li><span class="dropdown-item disabled text-muted">⏳ Application Pending</span></li>

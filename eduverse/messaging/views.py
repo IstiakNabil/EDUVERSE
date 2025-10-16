@@ -38,7 +38,7 @@ def inbox_view(request):
 def conversation_detail_view(request, conversation_id):
     conversation = get_object_or_404(Conversation, id=conversation_id)
 
-    # Authorization: ensure user is part of this conversation
+    # Authorization check
     if request.user != conversation.student and request.user != conversation.teacher:
         messages.error(request, "You are not authorized to view this conversation.")
         return redirect('messaging:inbox')
@@ -47,14 +47,54 @@ def conversation_detail_view(request, conversation_id):
     if request.method == 'POST':
         content = request.POST.get('content')
         if content:
-            Message.objects.create(
+            # Check if this is the student's first message BEFORE creating the new one
+            is_first_message = conversation.messages.filter(sender=conversation.student).count() == 0
+
+            # Create the new message object
+            message = Message.objects.create(
                 conversation=conversation,
                 sender=request.user,
                 content=content
             )
+
+            # ========================================
+            #    EMAIL NOTIFICATION LOGIC
+            # ========================================
+            # Send an email only if the sender is the student AND it's their first message
+            if message.sender == conversation.student and is_first_message:
+                teacher = conversation.teacher
+
+                # Format the subject as requested
+                subject = f"Message from {conversation.live_class.title}: {message.sender.username}"
+
+                conversation_url = request.build_absolute_uri(
+                    reverse('messaging:conversation_detail', kwargs={'conversation_id': conversation.id})
+                )
+
+                email_message = f"""
+                Hi {teacher.username},
+
+                You have a new message from student {message.sender.username} regarding your live class "{conversation.live_class.title}".
+
+                You can view the conversation and reply here:
+                {conversation_url}
+
+                Thanks,
+                The Eduverse Team
+                """
+
+                # Send the email
+                send_mail(
+                    subject,
+                    email_message,
+                    None,  # This uses the DEFAULT_FROM_EMAIL from your settings
+                    [teacher.email],
+                    fail_silently=False,  # Set to True in production to avoid crashes if email fails
+                )
+
             return redirect('messaging:conversation_detail', conversation_id=conversation_id)
 
-    # Mark messages as read
+    # Mark messages as read by the current user
     messages_to_mark_read = conversation.messages.filter(is_read=False).exclude(sender=request.user)
     messages_to_mark_read.update(is_read=True)
 

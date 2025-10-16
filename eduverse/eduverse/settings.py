@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'payments',
     'live',
     'messaging',
+    'earnings',
 
 ]
 

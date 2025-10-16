@@ -7,11 +7,11 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 import requests # Use the requests library directly
 import uuid
-
+from earnings.models import Earning
 from courses.models import Course, Enrollment
 from live.models import LiveClass, LiveClassEnrollment
 from django.contrib.auth.models import User
-
+from decimal import Decimal
 @login_required
 def checkout_page(request, course_pk):
     course = get_object_or_404(Course, pk=course_pk)
@@ -108,6 +108,7 @@ def initiate_live_class_payment(request, class_pk):
 
     return redirect('live:live_class_detail', pk=live_class.pk)
 
+
 @csrf_exempt
 def payment_success(request):
     if request.method == 'POST':
@@ -117,18 +118,50 @@ def payment_success(request):
             parts = tran_id.split('_')
             product_type, user_id, product_id = parts[0], parts[1], parts[2]
             user = User.objects.get(pk=user_id)
+
+            enrollment_obj = None
+            instructor = None
+
             if product_type == 'course':
                 course = Course.objects.get(pk=product_id)
-                Enrollment.objects.get_or_create(user=user, course=course, defaults={'amount_paid': course.price})
-                messages.success(request, f"Successfully enrolled in course: {course.title}")
+                instructor = course.instructor
+                enrollment, created = Enrollment.objects.get_or_create(
+                    user=user, course=course, defaults={'amount_paid': course.price}
+                )
+                if created: enrollment_obj = enrollment
+
             elif product_type == 'live':
                 live_class = LiveClass.objects.get(pk=product_id)
-                LiveClassEnrollment.objects.get_or_create(user=user, live_class=live_class, defaults={'amount_paid': live_class.price})
-                messages.success(request, f"Successfully enrolled in live class: {live_class.title}")
+                instructor = live_class.instructor
+                enrollment, created = LiveClassEnrollment.objects.get_or_create(
+                    user=user, live_class=live_class, defaults={'amount_paid': live_class.price}
+                )
+                if created: enrollment_obj = enrollment
+
+            # If a new enrollment was created, process the earnings
+            if enrollment_obj and instructor:
+                # Calculate 80/20 split
+                instructor_share = enrollment_obj.amount_paid * Decimal('0.80')
+                platform_fee = enrollment_obj.amount_paid * Decimal('0.20')
+
+                # Update the enrollment object with the split
+                enrollment_obj.instructor_share = instructor_share
+                enrollment_obj.platform_fee = platform_fee
+                enrollment_obj.save()
+
+                # Create a record of the earning for the instructor
+                Earning.objects.create(
+                    teacher=instructor,
+                    amount=instructor_share,
+                    source_enrollment=enrollment_obj
+                )
+
             return render(request, 'payments/payment_success.html', {'payment_data': payment_data})
-        except (IndexError, User.DoesNotExist, Course.DoesNotExist, LiveClass.DoesNotExist):
-            messages.error(request, "Invalid transaction.")
+
+        except Exception as e:
+            messages.error(request, f"Error processing enrollment: {e}")
             return render(request, 'payments/payment_fail.html')
+
     return render(request, 'payments/payment_fail.html')
 
 @csrf_exempt

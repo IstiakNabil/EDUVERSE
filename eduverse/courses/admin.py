@@ -35,5 +35,5 @@ admin.site.register(Review)       # 👈 ADD THIS
 
 @admin.register(Enrollment)
 class EnrollmentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'course', 'amount_paid', 'enrolled_at')
+    list_display = ('user', 'course', 'amount_paid', 'platform_fee', 'enrolled_at')
     list_filter = ('enrolled_at', 'course')
