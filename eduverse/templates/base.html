@@ -5,90 +5,287 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Eduverse{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">Eduverse</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="main-nav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'courses:course_list' %}">Courses</a>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
 
+<div class="container">
+
+<a class="navbar-brand" href="{% url 'home' %}">EduVerse.</a>
+
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav">
+
+<span class="navbar-toggler-icon"></span>
+
+</button>
+
+<div class="collapse navbar-collapse" id="main-nav">
+
+
+
+<form id="navbar-search" class="d-none flex-grow-1 mx-3" method="GET" action="{% url 'home' %}">
+
+<div class="input-group">
+
+<input class="form-control" type="search" name="q" placeholder="Search for any course...">
+
+<button class="btn btn-success" type="submit">
+
+<i class="bi bi-search"></i>
+
+</button>
+
+</div>
+
+</form>
+
+
+
+<ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+
+<li class="nav-item"><a class="nav-link" href="{% url 'courses:course_list' %}">Courses</a></li>
+
+<li class="nav-item"><a class="nav-link" href="{% url 'live:live_class_list' %}">Live Classes</a></li>
+
+{% if user.is_authenticated %}
+
+<li class="nav-item dropdown">
+
+<a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+
+Welcome, {{ user.username }}
+
+</a>
+
+<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+
+<li><a class="dropdown-item" href="{% url 'profile' %}">My Profile</a></li>
+
+<li><a class="dropdown-item" href="{% url 'courses:my_courses' %}">My Enrolled Courses</a></li>
+
+<li><a class="dropdown-item" href="{% url 'live:my_live_classes' %}">My Live Classes</a></li>
+
+<li><a class="dropdown-item" href="{% url 'messaging:inbox' %}">Inbox</a></li>
+
+<li><hr class="dropdown-divider"></li>
+
+{% if latest_teacher_app and latest_teacher_app.status == "approved" %}
+
+<li><a class="dropdown-item" href="{% url 'courses:course_create' %}">Create a Course</a></li>
+
+<li><a class="dropdown-item" href="{% url 'earnings:earnings_page' %}">My Earnings</a></li>
+
+
+
+{% elif latest_teacher_app and latest_teacher_app.status == "pending" %}
+
+<li><span class="dropdown-item disabled text-muted">Application Pending</span></li>
+
+
+
+{% else %} {# This covers users who were rejected or have never applied #}
+
+<li><a class="dropdown-item" href="{% url 'teachers:apply' %}">Apply as a Teacher</a></li>
+
+{% endif %}
+
+<li><hr class="dropdown-divider"></li>
+
+<li>
+
+<form class="d-inline" action="{% url 'logout' %}" method="post">
+
+{% csrf_token %}
+
+<button type="submit" class="dropdown-item">Logout</button>
+
+</form>
+
+</li>
+
+</ul>
+
+</li>
+
+{% else %}
+
+<li class="nav-item">
+
+<a class="nav-link" href="{% url 'login' %}">Login</a>
+
+</li>
+
+<li class="nav-item">
+
+<a class="nav-link btn btn-success text-white" href="{% url 'signup' %}">Sign Up</a>
+
+</li>
+
+{% endif %}
+
+</ul>
+
+</div>
+
+</div>
+
+</nav>
+{% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const heroSection = document.getElementById('hero-section');
+            const navbarSearch = document.getElementById('navbar-search');
+            if (navbarSearch) {
+                if (heroSection) {
+                    window.addEventListener('scroll', function() {
+                        if (window.scrollY > heroSection.offsetHeight) {
+                            navbarSearch.classList.remove('d-none');
+                        } else {
+                            navbarSearch.classList.add('d-none');
+                        }
+                    });
+                } else {
+                    navbarSearch.classList.remove('d-none');
+                }
+            }
+        });
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+
+
+<script>
+$(document).ready(function(){
+  $('.owl-carousel').owlCarousel({
+    loop: false,         // Set to false if you don't want the carousel to loop
+    margin: 10,          // Space between items in pixels
+    nav: true,           // Show next/prev navigation arrows
+    dots: false,         // Hide the small navigation dots
+    responsive:{
+        0:{              // On screens 0px and up
+            items: 3     // Show 3 items
+        },
+        600:{            // On screens 600px and up
+            items: 5     // Show 5 items
+        },
+        1000:{           // On screens 1000px and up
+            items: 8     // Show 8 items as requested
+        }
+    }
+  });
+});
+</script>
+
+<footer class="footer-section mt-auto">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-lg-4 col-md-6 mb-4">
+                <h5 class="footer-heading">EduVerse</h5>
+                <p class="text-muted">
+                    EduVerse is dedicated to connecting passionate instructors with eager learners. We provide the tools and community to share knowledge and build skills for the future.
+                </p>
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-4">
+                <h5 class="footer-heading">Useful Links</h5>
+                <ul class="list-unstyled">
+                    <li> <class="footer-link">Contact Us</li>
+                    <li><a href="https://github.com/IstiakNabil" class="footer-link">Istiak Ahamed</a></li>
+                    <li><a href="https://github.com/Rifah03" class="footer-link">Rifah Tasfia</a></li>
+                    <li><a href="https://github.com/Faiza-ahmed-esha" class="footer-link">Faiza Ahmed</a></li>
+
+                    <li><a href="#" class="footer-link" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-4">
+                <h5 class="footer-heading">Contact Info</h5>
+                <ul class="list-unstyled text-muted">
+                    <li class="mb-2">
+                        <i class="bi bi-envelope-fill me-2"></i>
+                        noreply@eduverse.com
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'live:live_class_list' %}">Live Classes</a>
-                   </li>
+                    <li class="mb-2">
+                        <i class="bi bi-telephone-fill me-2"></i>
+                        +880 1234 567890
+                    </li>
                 </ul>
+            </div>
 
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Welcome, {{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                                <li><a class="dropdown-item" href="{% url 'profile' %}">My Profile</a></li>
-                                <li><a class="dropdown-item" href="{% url 'courses:my_courses' %}">My Enrolled Courses</a></li>
-                                <li><a class="dropdown-item" href="{% url 'live:my_live_classes' %}">My Live Classes</a></li>
-                                <li><a class="dropdown-item" href="{% url 'messaging:inbox' %}">Inbox</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                {% if latest_teacher_app and latest_teacher_app.status == "approved" %}
-                              <li><a class="dropdown-item" href="{% url 'courses:course_create' %}">✅ Create a Course</a></li>
-                             <li><a class="dropdown-item" href="{% url 'earnings:earnings_page' %}">💰 My Earnings</a></li>
+        </div>
 
-                {% elif latest_teacher_app and latest_teacher_app.status == "pending" %}
-                    <li><span class="dropdown-item disabled text-muted">⏳ Application Pending</span></li>
+        <div class="text-center py-3 border-top mt-3">
+            <small class="text-muted">&copy; {% now "Y" %} EduVerse. All Rights Reserved.</small>
+        </div>
+    </div>
+</footer>
+... (your existing footer code) ...
 
-                {% else %} {# This covers users who were rejected or have never applied #}
-                    <li><a class="dropdown-item" href="{% url 'teachers:apply' %}">Apply as a Teacher</a></li>
-                {% endif %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form class="d-inline" action="{% url 'logout' %}" method="post">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item">Logout</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn btn-success text-white" href="{% url 'signup' %}">Sign Up</a>
-                        </li>
-                    {% endif %}
-                </ul>
+    <div class="modal fade" id="faqModal" tabindex="-1" aria-labelledby="faqModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="faqModalLabel">Frequently Asked Questions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6 class="faq-question">1. Who can teach on EduVerse?</h6>
+                        <p class="faq-answer">Anyone with a skill to share! Whether it's a hobby or a professional talent, you can be a tutor. No formal teaching qualifications are required.</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="faq-question">2. What can I learn or teach?</h6>
+                        <p class="faq-answer">Anything you can imagine! From arts and technology to business and lifestyle, our platform supports a vast range of subjects.</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="faq-question">3. Can I be both a tutor and a student?</h6>
+                        <p class="faq-answer">Yes, absolutely! We encourage everyone to share their skills while learning something new from others in the community.</p>
+                    </div>
+                    <div>
+                        <h6 class="faq-question">4. How do I get started?</h6>
+                        <p class="faq-answer">Just sign up for a free account to start learning. To teach, click "Become an Instructor" in the footer and follow the simple setup steps. It only takes a few minutes!</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
-    </nav>
-
-    <main>
-        {% if messages %}
-            <div class="container mt-3">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        {% block content %}{% endblock %}
-    </main>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    </div>
+    </body>
+</html>
 </body>
 </html>
