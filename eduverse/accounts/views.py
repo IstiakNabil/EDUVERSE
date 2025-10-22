@@ -1,41 +1,72 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
-from .models import Profile
 from .forms import CustomUserCreationForm
 from .forms import UserUpdateForm, ProfileUpdateForm
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
-# Create your views here.
-from django.db.models import Q
 from django.http import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from courses.models import Course
+from django.db.models import Q, Avg, F
+from live.models import LiveClass
 
-
+# Create your views here.
 def home_view(request):
     """
-    Handles both the default homepage display (featured courses)
-    and the search results display.
+    Handles both the default homepage and search results.
+    For the homepage, it shows the top 5 rated courses, or the 5 latest if none have ratings.
     """
     query = request.GET.get('q', '')
+    context = {'query': query}
 
     if query:
-        courses_to_display = Course.objects.filter(
+        # --- IF A SEARCH IS PERFORMED ---
+        # Only fetch search results and set the search flag to True.
+        search_results = Course.objects.filter(
             Q(title__icontains=query) | Q(description__icontains=query)
         )
-        is_search = True
+        context['courses'] = search_results
+        context['is_search'] = True # This is the crucial flag for the template
     else:
-        courses_to_display = Course.objects.all().order_by('-created_at')[:6]
-        is_search = False
+        # --- NEW Featured Courses Logic ---
+        # 1. Primary: Try to get top 5 rated courses
+        top_rated_courses = Course.objects.annotate(
+            average_rating=Avg('reviews__rating')  # Calculate average rating
+        ).filter(
+            average_rating__isnull=False          # Exclude courses with no ratings
+        ).order_by(
+            '-average_rating'                     # Order by the highest rating first
+        )[:5]
 
-    context = {
-        'courses': courses_to_display,
-        'query': query,
-        'is_search': is_search,
-    }
+        # 2. Fallback: If no courses have ratings, get the 5 latest courses
+        if top_rated_courses.exists():
+            courses_to_display = top_rated_courses
+            all_courses = Course.objects.annotate(
+                average_rating=Avg('reviews__rating')
+            ).order_by(
+                F('average_rating').desc(nulls_last=True),  # Highest ratings first, unrated ones last
+                '-created_at'  # Newest courses first among unrated ones
+            )
+
+            # 2. Chunk the sorted list into groups of 3 for the carousel
+            chunk_size = 3
+            courses_to_display = list(all_courses)
+            chunked_courses = [courses_to_display[i:i + chunk_size] for i in
+                               range(0, len(courses_to_display), chunk_size)]
+
+            context['chunked_courses'] = chunked_courses
+            context['is_search'] = False
+
+
+            all_live_classes = LiveClass.objects.all().order_by('-created_at')
+            # Chunk them into groups of 3 for the carousel
+            live_classes_list = list(all_live_classes)
+            chunked_live_classes = [live_classes_list[i:i + chunk_size] for i in
+                                    range(0, len(live_classes_list), chunk_size)]
+
+            # Add the chunked live classes to the context
+            context['chunked_live_classes'] = chunked_live_classes
 
     return render(request, 'home.html', context)
 
