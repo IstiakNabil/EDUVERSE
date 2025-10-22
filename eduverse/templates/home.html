@@ -5,123 +5,309 @@
 
 {% block content %}
 
-{# This block handles displaying search results #}
 {% if is_search %}
-    <div class="container mt-4">
-        <h1>Search Results for "{{ query }}"</h1>
-        <p>{{ courses.count }} course{{ courses.count|pluralize }} found.</p>
-        <hr>
-        <div class="row">
-            {% for course in courses %}
-                <div class="col-md-4 mb-4">
-                    <div class="card course-card h-100">
-                        <a href="{{ course.get_absolute_url }}">
-                            {% if course.thumbnail %}
-                                <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}">
-                            {% else %}
-                                <img src="{% static 'images/default-thumbnail.jpg' %}" class="card-img-top" alt="Default thumbnail">
-                            {% endif %}
-                        </a>
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ course.title }}</h5>
-                            <p class="card-text text-muted">By {{ course.instructor.username|default:"N/A" }}</p>
-                            <h4 class="mt-auto">BDT. {{ course.price }}</h4>
+<div class="container mt-5">
+    <h1 class="mb-4">Search Results for "{{ query }}"</h1>
+    <div class="row">
+        {% for course in courses %}
+            <div class="col-md-4 mb-4">
+                <div class="card course-card h-100">
+                    {# Check if a thumbnail exists BEFORE trying to display it #}
+                  {% if course.thumbnail %}
+                   <img src="{{ course.thumbnail.url }}" class="card-img-top card-img-top-custom" alt="{{ course.title }}">
+                  {% else %}
+    {# If not, show a default placeholder image #}
+                       <img src="{% static 'images/default-thumbnail.jpg' %}" class="card-img-top card-img-top-custom" alt="Default thumbnail">
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">
+                            <a href="{{ course.get_absolute_url }}" class="stretched-link text-dark text-decoration-none">{{ course.title }}</a>
+                        </h5>
+                        <p class="card-text text-muted">By {{ course.instructor.username|default:"N/A" }}</p>
+                        <div class="mt-auto">
+                            <h4 class="mb-0">BDT. {{ course.price }}</h4>
                         </div>
                     </div>
                 </div>
-            {% empty %}
+            </div>
+        {% empty %}
+            <div class="col">
                 <p>No courses found matching your search. Please try a different query.</p>
-            {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% else %}
+<header class="hero-section" id="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="hero-headline">Our teachers<br> will take it from here</h1>
+                <form method="GET" action="{% url 'home' %}">
+                    <div class="search-bar-container">
+                        <input class="form-control" type="search" name="q" placeholder="Search for any course..." aria-label="Search">
+                        <button class="btn btn-success" type="submit"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="categories-section py-4">
+    <div class="container">
+        <div class="owl-carousel owl-theme">
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'programming-tech' %}" class="category-block">
+                    <i class="bi bi-code-slash"></i>
+                    <p>Programming & Tech</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'graphics-design' %}" class="category-block">
+                    <i class="bi bi-palette"></i>
+                    <p>Graphics & Design</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'digital-marketing' %}" class="category-block">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <p>Digital Marketing</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'writing-translation' %}" class="category-block">
+                    <i class="bi bi-pencil-square"></i>
+                    <p>Writing & Translation</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'video-animation' %}" class="category-block">
+                    <i class="bi bi-camera-reels"></i>
+                    <p>Video & Animation</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'higher-secondary' %}" class="category-block">
+                    <i class="bi bi-bank"></i>
+                    <p>Higher Secondary</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'secondary' %}" class="category-block">
+                    <i class="bi bi-mortarboard"></i>
+                    <p>Secondary</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'primary' %}" class="category-block">
+                    <i class="bi bi-book"></i>
+                    <p>Primary</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'cooking' %}" class="category-block">
+                    <i class="bi bi-egg-fried"></i>
+                    <p>Cooking</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'arabic' %}" class="category-block">
+                    <i class="bi bi-translate"></i>
+                    <p>Arabic</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'music' %}" class="category-block">
+                    <i class="bi bi-music-note-beamed"></i>
+                    <p>Music</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'arts' %}" class="category-block">
+                    <i class="bi bi-brush"></i>
+                    <p>Arts</p>
+                </a>
+            </div>
+
+            <div class="item">
+                <a href="{% url 'courses:category_view' 'accounting' %}" class="category-block">
+                    <i class="bi bi-calculator"></i>
+                    <p>Accounting</p>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<section class="featured-courses course-grid-section py-5">
+    <div class="container">
+        <h2 class="mb-4">Featured Courses</h2>
+
+        <div id="featuredCoursesCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for course_chunk in chunked_courses %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="row g-3">
+                            {% for course in course_chunk %}
+                                <div class="col-md-4">
+                                    <div class="card course-card h-100">
+                                        {# The image is no longer wrapped in a link #}
+
+                                        <div class="card-body d-flex flex-column">
+                                            <h5 class="card-title">
+                                             <a href="{{ course.get_absolute_url }}" class="stretched-link text-decoration-none">{{ course.title }}</a>
+                                            </h5>
+                                            <p class="card-text text-muted">By {{ course.instructor.username|default:"N/A" }}</p>
+                                            <div class="mt-auto">
+                                                <h4 class="mb-0">BDT. {{ course.price }}</h4>
+                                            </div>
+                                        </div>
+                                        {% if course.thumbnail %}
+                                            <img src="{{ course.thumbnail.url }}" class="card-img-top card-img-top-custom" alt="{{ course.title }}">
+                                        {% else %}
+                                            <img src="{% static 'images/default-thumbnail.jpg' %}" class="card-img-top card-img-top-custom" alt="Default thumbnail">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="carousel-item active"><p class="text-center">No courses available yet.</p></div>
+                {% endfor %}
+            </div>
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#featuredCoursesCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#featuredCoursesCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </button>
         </div>
     </div>
 
-{# This block displays the default homepage with the hero, categories, and featured courses #}
-{% else %}
-    <header class="hero-section">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <h1>Our courses will take it from here</h1>
-                    <form method="GET" action="{% url 'home' %}">
-                        <div class="search-bar-container">
-                            <input class="form-control" type="search" name="q" placeholder="Search for any course..." aria-label="Search">
-                            <button class="btn btn-success" type="submit">
-                                <i class="bi bi-search"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </header>
+<section class="featured-live-classes course-grid-section py-5">
+    <div class="container">
+        <h2 class="mb-4">Featured Live Classes</h2>
 
-    <section class="categories-section">
-        <div class="container">
-            <h2 class="mb-5">You need it, we've got it</h2>
-            <div class="row g-4">
-                <div class="col">
-                    <a href="{% url 'courses:category_view' 'programming-tech' %}" class="category-icon">
-                        <i class="bi bi-code-slash"></i>
-                        <p>Programming & Tech</p>
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="{% url 'courses:category_view' 'graphics-design' %}" class="category-icon">
-                        <i class="bi bi-palette"></i>
-                        <p>Graphics & Design</p>
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="{% url 'courses:category_view' 'digital-marketing' %}" class="category-icon">
-                        <i class="bi bi-bar-chart-line"></i>
-                        <p>Digital Marketing</p>
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="{% url 'courses:category_view' 'writing-translation' %}" class="category-icon">
-                        <i class="bi bi-pencil-square"></i>
-                        <p>Writing & Translation</p>
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="{% url 'courses:category_view' 'video-animation' %}" class="category-icon">
-                        <i class="bi bi-camera-reels"></i>
-                        <p>Video & Animation</p>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
+        <div id="featuredLiveClassesCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for live_class_chunk in chunked_live_classes %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="row g-3 justify-content-center">
+                            {% for live_class in live_class_chunk %}
+                                <div class="col-md-4">
+                                    <div class="card course-card live-class-card h-100">
 
-    <section class="featured-courses py-5">
-        <div class="container">
-            <h2 class="text-center mb-4">Featured Courses</h2>
-            <div class="row">
-                {% for course in courses %}
-                <div class="col-md-4 mb-4">
-                    <div class="card course-card h-100">
-                        <a href="{{ course.get_absolute_url }}">
-                            {% if course.thumbnail %}
-                                <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}">
-                            {% else %}
-                                <img src="{% static 'images/default-thumbnail.jpg' %}" class="card-img-top" alt="Default thumbnail">
-                            {% endif %}
-                        </a>
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ course.title }}</h5>
-                            <p class="card-text text-muted">By {{ course.instructor.username|default:"N/A" }}</p>
-                            <h4 class="mt-auto">BDT. {{ course.price }}</h4>
+                                        <div class="card-body d-flex flex-column">
+                                            <h5 class="card-title">
+                                                <a href="{{ live_class.get_absolute_url }}" class="stretched-link text-decoration-none">{{ live_class.title }}</a>
+                                            </h5>
+                                            <p class="card-text text-muted">By {{ live_class.instructor.username }}</p>
+                                            <div class="mt-auto">
+                                                <h4 class="mb-0">BDT. {{ live_class.price }}</h4>
+                                            </div>
+                                        </div>
+                                        {% if live_class.thumbnail %}
+                                            <img src="{{ live_class.thumbnail.url }}" class="card-img-top card-img-top-custom" alt="{{ live_class.title }}">
+                                        {% else %}
+                                            <img src="{% static 'images/default-thumbnail.jpg' %}" class="card-img-top card-img-top-custom" alt="Default thumbnail">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
-                </div>
                 {% empty %}
-                <p class="text-center">No courses available yet. Check back soon!</p>
+                    <div class="carousel-item active"><p class="text-center">No live classes available yet.</p></div>
                 {% endfor %}
             </div>
-        </div>
-    </section>
-{% endif %}
 
-    <a href="{% url 'live:live_class_list' %}" class="btn btn-success">View All Live Classes →</a>
+            <button class="carousel-control-prev" type="button" data-bs-target="#featuredLiveClassesCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#featuredLiveClassesCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </button>
+        </div>
+    </div>
+</section>
+</section>
+<section class="how-it-works py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">About Us</h2>
+        <div class="timeline">
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-image">
+                        <img src="{% static 'images/step-submit.jpg' %}" alt="Submit Requirement">
+                    </div>
+                    <div class="timeline-text">
+                        <div class="text-box">
+                            <h3>Who are we?</h3>
+                            <p>Welcome to EduVerse – a universe of learning for everyone, by everyone. We believe that everyone has a skill worth sharing. Our platform connects passionate teachers with curious learners to explore interests, gain new skills, and grow together. Whether you're here to teach, learn, or both, you've found your place. Unlock your potential with us!
+                            </p>
+                        </div>
+                        </div>
+                </div>
+            </div>
+
+            <div class="timeline-item timeline-item-reverse">
+                <div class="timeline-content">
+                    <div class="timeline-image">
+                        <img src="{% static 'images/step-shortlist.jpg' %}" alt="Shortlist Tutors">
+                    </div>
+                    <div class="timeline-text">
+                        <div class="text-box">
+                            <h3>Become a Tutor</h3>
+                            <p>Have a passion for coding, cooking, or guitar? You don't need a certificate to teach on EduVerse—just a skill you love.
+
+Share your knowledge, build your brand, and earn an income by creating your own courses and live classes. Getting started is simple. Turn your passion into a profession.
+</p>
+                        </div>
+                        </div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="timeline-image">
+                        <img src="{% static 'images/step-appoint.jpg' %}" alt="Appoint Best Tutor">
+                    </div>
+                    <div class="timeline-text">
+                        <div class="text-box">
+                            <h3>FAQs</h3>
+                            <p>1. Who can teach on EduVerse?<br> Anyone with a skill to share! Whether it's a hobby or a professional talent, you can be a tutor. No formal teaching qualifications are required.<br>
+
+2. What can I learn or teach?<br> Anything you can imagine! From arts and technology to business and lifestyle, our platform supports a vast range of subjects.
+
+<br>3. Can I be both a tutor and a student?<br> Yes, absolutely! We encourage everyone to share their skills while learning something new from others in the community.
+
+<br>4. How do I get started? <br>Just sign up for a free account to start learning. To teach, click "Become a Tutor" on your dashboard and follow the simple setup steps. It only takes a few minutes!</p>
+                        </div>
+                        </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endif %}
 
 {% endblock %}
