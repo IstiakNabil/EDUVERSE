@@ -8,29 +8,45 @@ from django.contrib.contenttypes.models import ContentType
 from .models import Module, CourseVideo, TextContent, Enrollment, UserProgress, Review
 from django.db.models import Q
 from .models import Course
+from teachers.models import TeacherApplication
+from .models import Course, Module # Make sure Module is imported
 
 
 def course_list(request):
     """Display all courses, with optional search and filtering."""
+    # Start with the base queryset of all courses
     queryset = Course.objects.all()
+
+    # Get search and filter parameters from the GET request
     query = request.GET.get('q', '')
     category = request.GET.get('category', '')
 
-    # If a search query is submitted
+    # --- FIX: APPLY THE FILTERS ---
+
+    # 1. Apply the search filter if a query exists
+    # This searches for the query string in both the title and description (case-insensitive)
     if query:
         queryset = queryset.filter(
-            Q(title__icontains=query) | Q(description__icontains=query)
+            Q(title__icontains=query) |
+            Q(description__icontains=query)
         )
 
-    # If a category is selected from the dropdown
+    # 2. Apply the category filter if a category is selected
     if category:
         queryset = queryset.filter(category=category)
 
+    # --- END OF FIX ---
+
+    latest_teacher_app = None
+    if request.user.is_authenticated:
+        latest_teacher_app = TeacherApplication.objects.filter(user=request.user).order_by("-submitted_at").first()
+
     context = {
-        'courses': queryset,
-        'categories': Course.Category.choices,  # Pass all category choices to the template
+        'courses': queryset,  # Pass the now-filtered queryset to the template
+        'categories': Course.Category.choices,
         'current_query': query,
         'current_category': category,
+        'latest_teacher_app': latest_teacher_app,
     }
     return render(request, 'courses/course_list.html', context)
 
@@ -41,31 +57,33 @@ def course_detail(request, pk):
     course = get_object_or_404(Course, pk=pk)
     modules = course.modules.all().prefetch_related('videos', 'text_contents')
 
-    # --- Set default values for guests ---
+    # Set default values for guests
     is_enrolled = False
     completed_content_ids = {}
     can_review = False
 
-    # --- Only run user-specific checks if the user is logged in ---
+    # Only run user-specific checks if the user is logged in
     if request.user.is_authenticated:
-        # Check for enrollment status
         is_enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
 
-        # Get progress for the logged-in user
-        progress = UserProgress.objects.filter(user=request.user)
+        progress = UserProgress.objects.filter(user=request.user, course=course)
         completed_content_ids['text'] = {p.object_id for p in progress if p.content_type.model == 'textcontent'}
         completed_content_ids['video'] = {p.object_id for p in progress if p.content_type.model == 'coursevideo'}
 
-        # Logic for allowing reviews (only check if enrolled)
+        # --- THIS IS THE KEY LOGIC FOR REVIEWS ---
         if is_enrolled:
+            # 1. Count all content items in the course
             all_content_count = sum(m.videos.count() + m.text_contents.count() for m in modules)
+
+            # 2. Count all completed items for this user
             completed_count = len(completed_content_ids.get('text', [])) + len(completed_content_ids.get('video', []))
+
+            # 3. Check if everything is complete AND the user hasn't already reviewed
             if all_content_count > 0 and all_content_count == completed_count:
                 if not course.reviews.filter(user=request.user).exists():
                     can_review = True
 
-    # Logic for unlocking modules
-    # This loop now safely runs for both guests and logged-in users
+    # --- Logic for unlocking modules (remains the same) ---
     unlocked = True
     for module in modules:
         module.is_unlocked = unlocked
@@ -73,15 +91,13 @@ def course_detail(request, pk):
             all_content_complete = True
             for video in module.videos.all():
                 if video.id not in completed_content_ids.get('video', set()):
-                    all_content_complete = False
+                    all_content_complete = False;
                     break
-            if not all_content_complete:
-                unlocked = False
-                continue
+            if not all_content_complete: unlocked = False; continue
 
             for text in module.text_contents.all():
                 if text.id not in completed_content_ids.get('text', set()):
-                    all_content_complete = False
+                    all_content_complete = False;
                     break
             unlocked = all_content_complete
 
@@ -324,11 +340,17 @@ def add_text_content_view(request, module_pk):
     return render(request, 'courses/add_content_form.html', context)
 
 @login_required
-def mark_as_complete_view(request, model_id, pk):
-    content_type = get_object_or_404(ContentType, pk=model_id)
+def mark_as_complete_view(request, content_type_id, pk): # <-- RENAMED HERE
+    content_type = get_object_or_404(ContentType, pk=content_type_id) # <-- AND RENAMED HERE
     model_class = content_type.model_class()
     content_object = get_object_or_404(model_class, pk=pk)
-    UserProgress.objects.get_or_create(user=request.user, content_type=content_type, object_id=pk)
+    course = content_object.module.course
+    UserProgress.objects.get_or_create(
+        user=request.user,
+        course=course,  # This line is crucial
+        content_type=content_type,
+        object_id=pk
+    )
     if isinstance(content_object, (CourseVideo, TextContent)):
         return redirect('courses:course_detail', pk=content_object.module.course.pk)
     return redirect('home')
@@ -347,3 +369,87 @@ def add_review_view(request, model_name, pk):
             review.save()
             messages.success(request, "Your review has been submitted. Thank you!")
     return redirect(obj.get_absolute_url())
+
+@login_required
+def content_detail_view(request, content_type_id, pk):
+    """
+    Displays the detail page for a single piece of content (video or text).
+    """
+    # 1. Get the content object dynamically
+    try:
+        content_type = get_object_or_404(ContentType, pk=content_type_id)
+        model_class = content_type.model_class()
+        content_object = get_object_or_404(model_class, pk=pk)
+    except Exception:
+        messages.error(request, "Content not found.")
+        return redirect('home') # Or some other appropriate error page
+
+    course = content_object.module.course
+
+    # 2. Authorization Check: Is the user allowed to see this?
+    is_enrolled = Enrollment.objects.filter(user=request.user, course=course).exists()
+    is_instructor = (request.user == course.instructor)
+
+    if not (is_enrolled or is_instructor):
+        messages.error(request, "You are not enrolled in this course.")
+        return redirect('courses:course_detail', pk=course.pk)
+
+    # 3. Determine which template to render based on the content type
+    template_name = ''
+    if isinstance(content_object, TextContent):
+        template_name = 'courses/text_content_detail.html'
+    elif isinstance(content_object, CourseVideo):
+        template_name = 'courses/video_content_detail.html'
+    else:
+        # Fallback in case of an unexpected content type
+        messages.error(request, "Cannot display this content type.")
+        return redirect('courses:course_detail', pk=course.pk)
+
+    context = {
+        'content': content_object,
+        'course': course,
+    }
+
+    return render(request, template_name, context)
+
+
+
+def edit_module_view(request, module_pk):
+    module = get_object_or_404(Module, pk=module_pk)
+    # We need the course to redirect back to the correct content management page
+    course = module.course
+
+    if request.method == 'POST':
+        # Pass the instance to update the existing module
+        form = ModuleForm(request.POST, instance=module)
+        if form.is_valid():
+            form.save()
+            # Redirect to the content management page for the module's course
+            return redirect('courses:manage_course_content', course_pk=course.pk)
+    else:
+        # Pre-populate the form with the module's current data
+        form = ModuleForm(instance=module)
+
+    context = {
+        'form': form,
+        'module': module,
+        'course': course
+    }
+    return render(request, 'courses/edit_module_A.html', context)
+
+
+# 👇 ADD THIS NEW VIEW FOR DELETING A MODULE 👇
+def delete_module_view(request, module_pk):
+    module = get_object_or_404(Module, pk=module_pk)
+    course = module.course # For redirecting after deletion
+
+    if request.method == 'POST':
+        module.delete()
+        # Redirect back to the content management page
+        return redirect('courses:manage_course_content', course_pk=course.pk)
+
+    context = {
+        'module': module,
+        'course': course
+    }
+    return render(request, 'courses/delete_module_confirm.html', context)

@@ -32,11 +32,19 @@ urlpatterns = [
     path('sorry/', views.sorry, name='sorry'),
     path('category/<str:category_name>/', views.category_view, name='category_view'),
     path('manage/', views.manage_courses_view, name='manage_courses'),
+
+    path('module/<int:module_pk>/edit/', views.edit_module_view, name='edit_module_A'),
+    path('module/<int:module_pk>/delete/', views.delete_module_view, name='delete_module'),
+
+
     path('manage/<int:course_pk>/content/', views.manage_course_content_view, name='manage_course_content'),
     path('module/<int:module_pk>/add-video/', views.add_video_view, name='add_video_to_module'),
     path('module/<int:module_pk>/add-text/', views.add_text_content_view, name='add_text_to_module'),
-    path('mark-complete/<int:model_id>/<int:pk>/', views.mark_as_complete_view, name='mark_as_complete'),
+    path('mark-complete/<int:content_type_id>/<int:pk>/', views.mark_as_complete_view, name='mark_as_complete'),
     path('review/add/<str:model_name>/<int:pk>/', views.add_review_view, name='add_review'),
+    path('content/<int:content_type_id>/<int:pk>/', views.content_detail_view, name='content_detail'),
+
+
 
 
 ]
