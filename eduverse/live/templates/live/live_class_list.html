@@ -6,48 +6,60 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Upcoming Live Classes</h1>
-        {% if user.is_authenticated and latest_teacher_app and latest_teacher_app.status == "approved" %}
-            <a href="{% url 'live:create_live_class' %}" class="btn btn-primary">Create New Live Class</a>
+        <h1 class="mb-0">Upcoming Live Classes</h1>
+
+        {% if user.is_authenticated %}
+            {# You might want to create a custom class for this button too #}
+            <a href="{% url 'live:create_live_class' %}" class="btn btn-create-course">Create New Live Class</a>
         {% endif %}
     </div>
 
-    <div class="card bg-light mb-4">
-        <div class="card-body">
-            <form method="GET" action="{% url 'live:live_class_list' %}">
-                <div class="input-group">
-                    <input type="text" name="q" class="form-control" placeholder="Search live classes by keyword..." value="{{ current_query }}">
-                    <button type="submit" class="btn btn-primary">Search</button>
+    <form method="GET" action="{% url 'live:live_class_list' %}" class="mb-4">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <input type="text" name="q" class="form-control" placeholder="Search by keyword..." value="{{ current_query }}">
+            </div>
+            <div class="col-md-4">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for value, name in categories %}
+                        <option value="{{ value }}" {% if current_category == value %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-course-filter">Filter</button>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
-
+    </form>
     <div class="row">
         {% for class in classes %}
             <div class="col-md-4 mb-4">
-                <div class="card h-100 course-card">
-                    <a href="{% url 'live:live_class_detail' class.pk %}">
-                        {% if class.thumbnail %}
-                            <img src="{{ class.thumbnail.url }}" class="card-img-top" alt="{{ class.title }}" style="height: 200px; object-fit: cover;">
-                        {% else %}
-                            <img src="{% static 'images/default-thumbnail.jpg' %}" class="card-img-top" alt="Default thumbnail" style="height: 200px; object-fit: cover;">
-                        {% endif %}
-                    </a>
+                <div class="card h-100 course-card live-class-card">
+
                     <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">{{ class.title }}</h5>
-                        <p class="card-text text-muted">By {{ class.instructor.username }}</p>
-                        <p class="card-text"><small>Starts: {{ class.start_time|date:"F j, Y \a\t P" }}</small></p>
-                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                        <h5 class="card-title">
+                            <a href="{% url 'live:live_class_detail' class.pk %}" class="stretched-link text-decoration-none">{{ class.title }}</a>
+                        </h5>
+                        <p class="card-text " style="color: white;">By {{ class.instructor.username }}</p>
+                        <p class="card-text"><small class="start-time">Starts: {{ class.start_time|date:"F j, Y \a\t P" }}</small></p>
+                        <div class="mt-auto">
                             <h4 class="mb-0">BDT. {{ class.price }}</h4>
-                            <a href="{% url 'live:live_class_detail' class.pk %}" class="btn btn-success">View Details</a>
                         </div>
                     </div>
+
+                       {% if class.thumbnail %}
+                        <img src="{{ class.thumbnail.url }}" class="card-img-top card-img-top-custom" alt="{{ class.title }}">
+                    {% else %}
+                        <img src="{% static 'images/default-thumbnail.jpg' %}" class="card-img-top card-img-top-custom" alt="Default thumbnail">
+                    {% endif %}
                 </div>
             </div>
         {% empty %}
             <div class="col">
-                <p>No live classes found matching your search. Please check back soon!</p>
+                <p>No live classes found matching your criteria. Please try a different search or filter.</p>
             </div>
         {% endfor %}
     </div>
