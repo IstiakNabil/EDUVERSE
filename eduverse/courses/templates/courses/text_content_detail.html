@@ -1,0 +1,27 @@
+{# courses/templates/courses/text_content_detail.html #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'courses:course_detail' course.pk %}">{{ course.title }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ content.title }}</li>
+                </ol>
+            </nav>
+            <hr>
+            
+            <h1 class="mb-4">{{ content.title }}</h1>
+            
+            <div class="content-body bg-light p-4 rounded">
+                {{ content.content|linebreaks }}
+            </div>
+            
+            <a href="{% url 'courses:course_detail' course.pk %}" class="btn btn-primary mt-4">← Back to Course</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

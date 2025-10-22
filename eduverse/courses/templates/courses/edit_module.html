@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Module - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'courses:manage_courses' %}">Manage Courses</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'courses:manage_content' course.pk %}">{{ course.title }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit Module</li>
+      </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Edit Module: {{ module.title }}</h3>
+                    <hr>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Update Module</button>
+                            <a href="{% url 'courses:manage_content' course.pk %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

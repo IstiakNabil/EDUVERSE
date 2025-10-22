@@ -25,8 +25,8 @@
                         <p class="card-text">{{ module.description }}</p>
                         <a href="{% url 'courses:add_video_to_module' module.pk %}" class="btn btn-primary btn-sm">Add Video</a>
                         <a href="{% url 'courses:add_text_to_module' module.pk %}" class="btn btn-secondary btn-sm">Add Text</a>
-                        <a href="#" class="btn btn-warning btn-sm">Edit</a>
-                        <a href="#" class="btn btn-danger btn-sm">Delete</a>
+                        <a href="{% url 'courses:edit_module_A' module.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="{% url 'courses:delete_module' module.pk %}" class="btn btn-danger btn-sm">Delete</a>
                     </div>
                 </div>
             {% empty %}

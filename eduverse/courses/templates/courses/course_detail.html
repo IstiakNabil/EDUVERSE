@@ -52,21 +52,46 @@
                                 <div class="accordion-body">
                                     {% if module.is_unlocked %}
                                         {% for text in module.text_contents.all %}
-                                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
-                                                <span>📄 {{ text.title }}</span>
-                                                {% if text.id in completed_content_ids.text %}
-                                                    <span class="badge bg-success">✓ Completed</span>
-                                                {% else %}<form action="{% url 'courses:mark_as_complete' text.get_content_type_id text.pk %}" method="post">{% csrf_token %}<button type="submit" class="btn btn-outline-success btn-sm">Mark as Complete</button></form>{% endif %}
-                                            </div>
-                                        {% endfor %}
-                                        {% for video in module.videos.all %}
-                                            <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
-                                                <span>🎬 {{ video.title }}</span>
-                                                {% if video.id in completed_content_ids.video %}
-                                                    <span class="badge bg-success">✓ Completed</span>
-                                                {% else %}<form action="{% url 'courses:mark_as_complete' video.get_content_type_id video.pk %}" method="post">{% csrf_token %}<button type="submit" class="btn btn-outline-success btn-sm">Mark as Complete</button></form>{% endif %}
-                                            </div>
-                                        {% endfor %}
+    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+        {# V-- CHANGED: The title is now a link to the content detail page --V #}
+        <span>
+            <a href="{% url 'courses:content_detail' text.get_content_type_id text.pk %}">
+                📄 {{ text.title }}
+            </a>
+        </span>
+        {# ^-- END OF CHANGE --^ #}
+
+        {% if text.id in completed_content_ids.text %}
+            <span class="badge bg-success">✓ Completed</span>
+        {% else %}
+            <form action="{% url 'courses:mark_as_complete' text.get_content_type_id text.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-success btn-sm">Mark as Complete</button>
+            </form>
+        {% endif %}
+    </div>
+{% endfor %}
+
+{% for video in module.videos.all %}
+    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+        {# V-- CHANGED: The title is now a link to the content detail page --V #}
+        <span>
+            <a href="{% url 'courses:content_detail' video.get_content_type_id video.pk %}">
+                🎬 {{ video.title }}
+            </a>
+        </span>
+        {# ^-- END OF CHANGE --^ #}
+
+        {% if video.id in completed_content_ids.video %}
+            <span class="badge bg-success">✓ Completed</span>
+        {% else %}
+            <form action="{% url 'courses:mark_as_complete' video.get_content_type_id video.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-success btn-sm">Mark as Complete</button>
+            </form>
+        {% endif %}
+    </div>
+{% endfor %}
                                     {% else %}
                                         <p>Please complete the previous module to unlock this content.</p>
                                     {% endif %}
@@ -99,15 +124,17 @@
             {% endfor %}
 
             {% if can_review %}
-            <div class="card my-4 bg-light"><div class="card-body">
-                <h5 class="card-title">Leave a Review</h5>
-                <form action="{% url 'courses:add_review' 'course' course.pk %}" method="post">
-                    {% csrf_token %}
-                    {{ review_form.as_p }}
-                    <button type="submit" class="btn btn-primary">Submit Review</button>
-                </form>
-            </div></div>
-            {% endif %}
+    <div class="card my-4 bg-light">
+        <div class="card-body">
+            <h5 class="card-title">Leave a Review</h5>
+            <form action="{% url 'courses:add_review' 'course' course.pk %}" method="post">
+                {% csrf_token %}
+                {{ review_form.as_p }}
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+            </form>
+        </div>
+    </div>
+{% endif %}
         </div>
     </div>
 </div>

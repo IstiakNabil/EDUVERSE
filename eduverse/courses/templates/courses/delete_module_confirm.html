@@ -1,0 +1,28 @@
+{# courses/templates/courses/delete_module_confirm.html #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'courses:manage_courses' %}">Manage Courses</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'courses:manage_course_content' course.pk %}">{{ course.title }}</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Confirm Delete</li>
+        </ol>
+    </nav>
+
+    <h2>Confirm Deletion</h2>
+    <hr>
+    
+    <div class="alert alert-danger">
+        <p>Are you sure you want to delete the module titled: <strong>"{{ module.title }}"</strong>?</p>
+        <p>This action cannot be undone. All associated content (videos, text) will also be deleted.</p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, I'm sure. Delete it.</button>
+        <a href="{% url 'courses:manage_course_content' course.pk %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

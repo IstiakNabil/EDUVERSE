@@ -1,0 +1,30 @@
+{# courses/templates/courses/video_content_detail.html #}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+             <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'courses:course_detail' course.pk %}">{{ course.title }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ content.title }}</li>
+                </ol>
+            </nav>
+            <hr>
+
+            <h1 class="mb-4">{{ content.title }}</h1>
+            
+            <div class="video-player-wrapper">
+                <video controls width="100%" preload="metadata">
+                    <source src="{{ content.video_file.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
+            <a href="{% url 'courses:course_detail' course.pk %}" class="btn btn-primary mt-4">← Back to Course</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
