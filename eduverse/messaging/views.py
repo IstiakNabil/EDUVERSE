@@ -7,6 +7,7 @@ from .models import Conversation, Message
 from live.models import LiveClass, LiveClassEnrollment
 from django.core.mail import send_mail # 👈 Import send_mail
 from django.urls import reverse
+from django.utils import timezone
 
 @login_required
 def start_conversation_view(request, class_pk):
@@ -63,36 +64,27 @@ def conversation_detail_view(request, conversation_id):
             # Send an email only if the sender is the student AND it's their first message
             if message.sender == conversation.student and is_first_message:
                 teacher = conversation.teacher
-
-                # Format the subject as requested
                 subject = f"Message from {conversation.live_class.title}: {message.sender.username}"
-
                 conversation_url = request.build_absolute_uri(
                     reverse('messaging:conversation_detail', kwargs={'conversation_id': conversation.id})
                 )
-
                 email_message = f"""
-                Hi {teacher.username},
-
-                You have a new message from student {message.sender.username} regarding your live class "{conversation.live_class.title}".
-
-                You can view the conversation and reply here:
-                {conversation_url}
-
-                Thanks,
-                The Eduverse Team
-                """
+                            Hi {teacher.username},
+                            You have a new message from {message.sender.username} regarding your live class "{conversation.live_class.title}".
+                            View the conversation here: {conversation_url}
+                            Thanks,
+                            The Eduverse Team
+                            """
 
                 # Send the email
-                send_mail(
-                    subject,
-                    email_message,
-                    None,  # This uses the DEFAULT_FROM_EMAIL from your settings
-                    [teacher.email],
-                    fail_silently=False,  # Set to True in production to avoid crashes if email fails
-                )
+                send_mail(subject, email_message, None, [teacher.email], fail_silently=False)
 
-            return redirect('messaging:conversation_detail', conversation_id=conversation_id)
+                # Update the enrollment timestamp
+                LiveClassEnrollment.objects.filter(
+                    user=request.user,
+                    live_class=conversation.live_class
+                ).update(first_message_sent_at=timezone.now())
+                return redirect('messaging:conversation_detail', conversation_id=conversation_id)
 
     # Mark messages as read by the current user
     messages_to_mark_read = conversation.messages.filter(is_read=False).exclude(sender=request.user)
