@@ -156,7 +156,10 @@ def payment_success(request):
                     source_enrollment=enrollment_obj
                 )
 
-            return render(request, 'payments/payment_success.html', {'payment_data': payment_data})
+            return render(request, 'payments/payment_success.html', {
+                'payment_data': payment_data,
+                'user': user
+            })
 
         except Exception as e:
             messages.error(request, f"Error processing enrollment: {e}")
