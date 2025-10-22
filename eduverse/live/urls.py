@@ -19,6 +19,7 @@ urlpatterns = [
 
     path('my-live-classes/', views.my_live_classes_view, name='my_live_classes'),
     path('manage-live-classes/', views.manage_live_classes_view, name='manage_live_classes'),
+
     # The following old payment URLs are no longer needed and have been removed:
     # - live_payment_method
     # - live_pay_wallet

@@ -8,6 +8,8 @@ from django.utils import timezone
 from datetime import timedelta
 from courses.forms import ReviewForm
 from django.db.models import Q
+from .models import LiveClass, LiveClassEnrollment# Make sure LiveClassCategory is imported if you defined it in models
+from django.db.models import Q
 
 @login_required
 def create_live_class(request):
@@ -22,20 +24,30 @@ def create_live_class(request):
         form = LiveClassForm()
     return render(request, 'live/create_live_class.html', {'form': form})
 
+# live/views.py (Corrected Version)
+
 def live_class_list(request):
     """Displays all live classes, with an optional search filter."""
-    queryset = LiveClass.objects.all()
+    # Start with the base queryset
+    queryset = LiveClass.objects.all().order_by('-start_time')
     query = request.GET.get('q', '')
+    category = request.GET.get('category', '')
 
-    # If a search query is submitted
+    # If a search query is submitted, apply the filter to the current queryset
     if query:
         queryset = queryset.filter(
             Q(title__icontains=query) | Q(description__icontains=query)
         )
 
+    # If a category is selected, apply the filter to the ALREADY filtered queryset
+    if category:
+        queryset = queryset.filter(category=category)
+
     context = {
         'classes': queryset,
+        'categories': LiveClass.LiveClassCategory.choices,
         'current_query': query,
+        'current_category': category,
     }
     return render(request, 'live/live_class_list.html', context)
 
@@ -49,12 +61,11 @@ def live_class_detail(request, pk):
 
     is_enrolled = enrollment is not None
 
-    # --- This is the logic that needs to be correct ---
     can_review = False
-    if is_enrolled:
-        # Check if 2 minutes (for testing) have passed since the class start time
-        if timezone.now() > live_class.start_time + timedelta(minutes=2):
-            # Also check if the user has NOT already reviewed this class
+    # Only check for review eligibility if the user is enrolled AND has sent a message
+    if is_enrolled and enrollment.first_message_sent_at:
+        # Now it's safe to do the time calculation
+        if timezone.now() > enrollment.first_message_sent_at + timedelta(minutes=2):
             if not live_class.reviews.filter(user=request.user).exists():
                 can_review = True
 
@@ -65,7 +76,6 @@ def live_class_detail(request, pk):
         'can_review': can_review,
     }
     return render(request, 'live/live_class_detail.html', context)
-
 @login_required
 def live_checkout(request, pk):
     live_class = get_object_or_404(LiveClass, pk=pk)

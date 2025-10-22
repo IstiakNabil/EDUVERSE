@@ -10,6 +10,6 @@ class LiveClassAdmin(admin.ModelAdmin):
 
 @admin.register(LiveClassEnrollment)
 class LiveClassEnrollmentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'live_class', 'amount_paid', 'platform_fee', 'enrolled_at')
+    list_display = ('user', 'live_class', 'amount_paid', 'enrolled_at', 'first_message_sent_at')
     list_filter = ('enrolled_at', 'live_class')
     search_fields = ('user__username', 'live_class__title')
